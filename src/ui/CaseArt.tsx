@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { theme } from './theme';
 import { artFor } from './caseArtAssets';
@@ -26,11 +27,24 @@ interface Props {
  */
 export function CaseArt({ script, locked }: Props) {
   const art = artFor(script.id);
-  if (art === undefined) return <CasePoster script={script} locked={locked} />;
+  /*
+   * A cover that will not decode falls back to the generated poster.
+   *
+   * The grid mounts all sixteen covers at once — it is a plain ScrollView, not a
+   * virtualised list — and the ten 1080x1350 ones cost about 5.8MB each once
+   * decoded. Under that much pressure the platform image loader can give up on
+   * one, and which one is arbitrary. Before this, the tile it gave up on drew as
+   * an empty frame: no art, no poster, no error, just a hole in the grid where a
+   * case used to be. `CasePoster` is right there and already draws every case,
+   * including the locked treatment, so there is no reason for the failure to be
+   * visible at all.
+   */
+  const [failed, setFailed] = useState(false);
+  if (art === undefined || failed) return <CasePoster script={script} locked={locked} />;
 
   return (
     <View style={styles.frame} accessible={false} importantForAccessibility="no-hide-descendants">
-      <Image source={art} style={styles.image} resizeMode="cover" />
+      <Image source={art} style={styles.image} resizeMode="cover" onError={() => setFailed(true)} />
       {/* Not a padlock. The case stays legible as itself. */}
       {locked ? <View style={styles.scrim} pointerEvents="none" /> : null}
     </View>

@@ -55,7 +55,14 @@ export function BoardDock({ a, b, onUnpin, onCompare, clearance, onMeasure }: Pr
         accessibilityState={{ disabled: !ready }}
         style={({ pressed }) => [styles.compare, !ready && styles.compareOff, pressed && styles.pressed]}
       >
-        <Text style={[styles.compareText, !ready && styles.compareTextOff]}>{t('board.compare')}</Text>
+        <Text
+          style={[styles.compareText, !ready && styles.compareTextOff]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.8}
+        >
+          {t('board.compare')}
+        </Text>
         {/* Absolutely placed so the label stays optically centred as the count changes. */}
         <Text style={[styles.count, !ready && styles.countOff]}>{pinned}/2</Text>
       </Pressable>
@@ -85,7 +92,12 @@ function Slot({
         accessibilityLabel={t('board.slot.emptyLabel', { n: slot })}
       >
         <View style={[styles.marker, styles.markerEmpty]} />
-        <Text style={styles.slotEmptyText} numberOfLines={1}>
+        <Text
+          style={styles.slotEmptyText}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.75}
+        >
           {t('board.slot.empty')}
         </Text>
       </View>
@@ -147,7 +159,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: theme.space.md,
+    paddingHorizontal: theme.space.xl,
     backgroundColor: theme.color.accent,
     borderRadius: theme.radius.chip,
   },
