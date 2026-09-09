@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { clearanceFor } from './tabBarClearance';
 
 /**
  * How much bottom padding a screen inside the case tabs needs so the native tab
@@ -17,14 +18,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
  * `useBottomTabBarHeight` — is not installed, and pulling it in for one number
  * would add a navigator this app does not use.
  *
- * So: the platform's documented bar height, plus whatever the safe area reports.
- * On iOS the bar's frame already includes the home indicator inset, so when
- * `insets.bottom` reports 34 the sum is the true 83; when the navigator has
- * consumed the inset and it reports 0, the sum is 49, which still clears the bar
- * itself. **Both readings land somewhere safe, which is the point** — the
- * failure modes are not symmetric. Over-padding leaves a little dead space at
- * the bottom of a scroll view. Under-padding hides a control the player has to
- * tap, which is the bug this exists to end.
+ * So: the platform's documented bar height, and whatever the safe area reports,
+ * combined by `clearanceFor` — which is where the reasoning about the three
+ * readings of `insets.bottom` lives, and why the bar is no longer added to an
+ * inset that already contains it. The failure modes are not symmetric, and that
+ * is still the point: over-padding leaves dead space under a docked control,
+ * under-padding hides a control the player has to tap.
  */
 
 /** UITabBar is 49pt; Android's BottomNavigationView is 56dp. */
@@ -32,5 +31,5 @@ const BAR = Platform.select({ ios: 49, android: 56, default: 56 });
 
 export function useTabBarClearance(): number {
   const insets = useSafeAreaInsets();
-  return BAR + insets.bottom;
+  return clearanceFor(BAR, insets.bottom);
 }
