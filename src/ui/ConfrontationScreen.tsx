@@ -6,6 +6,7 @@ import { useReduceMotion } from '@/settings/useReduceMotion';
 import { theme } from './theme';
 import { useTabBarClearance } from './useTabBarClearance';
 import { useTranslator } from '@/i18n/useTranslator';
+import { Typewriter } from './Typewriter';
 import {
   press,
   establishedMotiveIds,
@@ -58,6 +59,21 @@ export function ConfrontationScreen({ script, progress, onClosed }: Props) {
     confrontation ? [{ key: 'open', who: 'them', text: confrontation.opening }] : [],
   );
   const [confessed, setConfessed] = useState(false);
+
+  /*
+   * The confession types itself out; these two are how it ends.
+   *
+   * `skipped` is the player's tap, `revealed` is the typewriter reporting that
+   * the last character is on screen. They stay separate because Reduce Motion
+   * finishes the passage too, and the button that closes the case has to wait
+   * for the text either way — a Close button offered over a half-written
+   * confession is an invitation to miss the ending you just spent a case
+   * earning.
+   */
+  const [skipped, setSkipped] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const typing = confessed && !revealed;
+  const onRevealed = useCallback(() => setRevealed(true), []);
 
   const killer = script.characters.find((c) => c.id === script.solution.killerId);
 
@@ -128,7 +144,13 @@ export function ConfrontationScreen({ script, progress, onClosed }: Props) {
       <ScrollView
         ref={scrollRef}
         contentContainerStyle={[styles.transcript, { paddingBottom: clearance }]}
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: !reduceMotion })}
+        onContentSizeChange={() =>
+          /* Unanimated while the confession is typing. The content grows forty
+             times a second, and forty overlapping scroll animations fight each
+             other into a stutter; growing by a few points at a time makes an
+             instant scroll read as a smooth one anyway. */
+          scrollRef.current?.scrollToEnd({ animated: !reduceMotion && !typing })
+        }
       >
         <View style={styles.head}>
           <View style={[styles.avatar, { backgroundColor: killer.avatarColor }]}>
@@ -154,19 +176,41 @@ export function ConfrontationScreen({ script, progress, onClosed }: Props) {
             entering={reduceMotion ? undefined : FadeIn.duration(600).delay(theme.motion.base)}
             style={styles.confession}
           >
-            <Text style={styles.confessionText}>{confrontation.confession}</Text>
+            {/* The passage itself is the skip target, not only the control
+                below it: a player who has decided they are done reading reaches
+                for the text, not for the bottom of the screen. */}
+            <Pressable onPress={() => setSkipped(true)} disabled={revealed} accessible={false}>
+              <Typewriter
+                text={confrontation.confession}
+                style={styles.confessionText}
+                instant={reduceMotion || skipped}
+                onDone={onRevealed}
+              />
+            </Pressable>
           </Animated.View>
         ) : null}
       </ScrollView>
 
       {confessed ? (
-        <Pressable
-          onPress={onClosed}
-          accessibilityRole="button"
-          style={({ pressed }) => [styles.close, { marginBottom: clearance }, pressed && styles.pressed]}
-        >
-          <Text style={styles.closeText}>{t('confront.close')}</Text>
-        </Pressable>
+        revealed ? (
+          <Pressable
+            onPress={onClosed}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.close, { marginBottom: clearance }, pressed && styles.pressed]}
+          >
+            <Text style={styles.closeText}>{t('confront.close')}</Text>
+          </Pressable>
+        ) : (
+          /* Held back until the last character lands, and doubling as the skip
+             control so that waiting is never the only option. */
+          <Pressable
+            onPress={() => setSkipped(true)}
+            accessibilityRole="button"
+            style={({ pressed }) => [styles.skip, { marginBottom: clearance }, pressed && styles.pressed]}
+          >
+            <Text style={styles.skipText}>{t('confront.skip')}</Text>
+          </Pressable>
+        )
       ) : (
         <View style={[styles.tray, { paddingBottom: clearance }]}>
           <Text style={styles.trayLabel}>
@@ -260,5 +304,16 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.chip,
   },
   closeText: { ...theme.type.body, color: theme.color.bg, fontWeight: '600' },
+
+  /* Deliberately not a button. It occupies the Close button's place while the
+     confession types, and looking like one would invite the tap that ends the
+     scene rather than the one that finishes it. */
+  skip: {
+    margin: theme.space.md,
+    minHeight: theme.hit.min,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  skipText: { ...theme.type.meta, color: theme.color.textDim },
   pressed: { opacity: 0.7 },
 });

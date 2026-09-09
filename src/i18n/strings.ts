@@ -250,6 +250,7 @@ export const EN = {
    */
   'confront.repeat': 'You have said that already.',
   'confront.close': 'Close the case',
+  'confront.skip': 'Tap to skip',
   'confront.open': 'Put it to them. One fact at a time.',
   'confront.left': '{n} left to say',
   'confront.leftOne': '1 left to say',
@@ -648,6 +649,7 @@ const ES: Catalogue = {
 
   'confront.repeat': 'Eso ya lo has dicho.',
   'confront.close': 'Cerrar el caso',
+  'confront.skip': 'Toca para saltar',
   'confront.open': 'Plántaselo a esta persona. Un hecho cada vez.',
   'confront.left': 'Quedan {n} por decir',
   'confront.leftOne': 'Queda 1 por decir',
@@ -986,6 +988,7 @@ const FR: Catalogue = {
 
   'confront.repeat': 'Tu l’as déjà dit.',
   'confront.close': 'Clore l’affaire',
+  'confront.skip': 'Touche pour passer',
   'confront.open': 'Mets cette personne devant les faits. Un fait à la fois.',
   'confront.left': 'Encore {n} à dire',
   'confront.leftOne': 'Encore 1 à dire',
@@ -1322,6 +1325,7 @@ const DE: Catalogue = {
 
   'confront.repeat': 'Das hast du schon gesagt.',
   'confront.close': 'Fall schließen',
+  'confront.skip': 'Zum Überspringen tippen',
   'confront.open': 'Halte es dieser Person vor. Eine Tatsache nach der anderen.',
   'confront.left': 'Noch {n} zu sagen',
   'confront.leftOne': 'Noch 1 zu sagen',
@@ -1653,6 +1657,7 @@ const PT_BR: Catalogue = {
 
   'confront.repeat': 'Você já disse isso.',
   'confront.close': 'Encerrar o caso',
+  'confront.skip': 'Toque para pular',
   'confront.open': 'Ponha na frente dessa pessoa. Um fato de cada vez.',
   'confront.left': 'Faltam {n} a dizer',
   'confront.leftOne': 'Falta 1 a dizer',
