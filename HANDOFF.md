@@ -53,11 +53,11 @@ accuse.
 | Deduction engine (`src/engine`) | ✅ pure TS, 94% stmts |
 | State store (`src/state`) | ✅ + autosave, resume, save-merge |
 | Chat UI + craft pass | ✅ Mobbin-grounded |
-| Evidence board | ✅ craft pass done 2026-09-05 (§8) — docked compare tray, localised, ruled ground. **Unseen on a device** |
-| Accusation screen | ✅ craft pass done 2026-09-05 (§8) — in-world confirm sheet replaces the OS alert, localised, keyed refusal. **Unseen on a device** |
+| Evidence board | ✅ craft pass done 2026-09-05 (§8) — docked compare tray, localised, ruled ground. **Seen on device 2026-09-10**; the dead strip under the dock is fixed (§8) |
+| Accusation screen | ✅ craft pass done 2026-09-05 (§8) — in-world confirm sheet replaces the OS alert, localised, keyed refusal. **Seen on device 2026-09-10** |
 | Routes | ✅ landing → threads → board → accuse, + settings, language, sign-in — all reachable. `/how-to-play` is **gone**; `/landing` replaces it |
-| Paywall | ✅ two-option chooser (this case / the pack), typed failure messages, confirmation page. **A completed purchase has still never been observed** |
-| RevenueCat Test Store | ⚠️ SDK configures; **a completed purchase has never been observed** |
+| Paywall | ✅ two-option chooser (this case / the pack), typed failure messages, confirmation page. **A purchase completed on device 2026-09-10** |
+| RevenueCat Test Store | ✅ **a purchase completed on device 2026-09-10** — the one hard eligibility requirement, cleared after six builds |
 | 15 case packs + tutorial | ✅ written, and **all sixteen read end to end by the owner** (2026-08-28) |
 | Autosave / resume | ✅ tested, **never exercised by a human closing the app mid-case** |
 | Settings screen + audio model | ✅ code complete, volume is a real slider, **22 files in `assets/audio/` — 5 cues + 17 beds, all synthesised by `tools/make-audio.mjs`. Structurally verified; never listened to by a human** |
@@ -72,7 +72,7 @@ accuse.
 | Onboarding | ✅ animated landing (sign in / play as guest) → Bakehouse, with the walkthrough running **inside** the case as coach marks. Re-armed from Settings |
 | Case closed | ✅ closed-file header, proof tally, coda, and three exits: next case, all cases, play again |
 
-**Tests:** `.\check.cmd` → **4866 passing across 132 files**, typecheck clean,
+**Tests:** `.\check.cmd` → **4922 passing across 139 files**, typecheck clean,
 coverage 94.3% statements / 91.1% branches on the measured directories. Verified
 by running the suite on 2026-09-04, not copied forward. The files added since the
 last count are `src/audio/beds.test.ts`, `src/ui/claimMarking.test.ts`,
@@ -93,7 +93,7 @@ number has been wrong in this file twice — it said 86 when 15 packs existed, a
 in a document does not fail.
 
 **A green suite is not a playthrough.** It is worth being precise about what the
-4843 actually prove: that no case is unsolvable, no thread is unreachable, no
+4922 actually prove: that no case is unsolvable, no thread is unreachable, no
 contradiction fires that the author did not declare, and no translation drops an
 id. They prove nothing whatever about whether a case is *enjoyable*, whether a
 screen looks right, or whether a purchase completes.
@@ -1254,7 +1254,7 @@ The design detector returns clean.
 
 **Not verified on a device.**
 
-### The game is now fully localised — 2026-09-05
+### Localisation — claimed finished 2026-09-05, actually finished 2026-09-05
 
 `ConfrontationScreen` and the comparison verdicts were the last English-only
 surfaces. Both now go through the catalogue.
@@ -1280,6 +1280,107 @@ header executable — it is what found those four. `translate.test.ts` covers
 parity and placeholders within the catalogue; nothing had ever compared the
 catalogue against the screens.
 
+**This section claimed the game was fully localised, and it was not.** The
+heading above said so and commit `047ab41` said so, and an animation sweep
+immediately afterwards found **eight more English surfaces**: the thread list's
+locked-count line and its three row labels, the briefing CTA, the claim menu
+heading, the close button, and four screen-reader labels. Fixed in `544af9d`.
+
+One of them was a content bug rather than a translation gap. `BriefingScreen`
+read **"Open her messages"** — and the victim of case 1 is Tom Vardy, so the
+very first screen of the tutorial carried the wrong pronoun. The accessibility
+label beside it already read "Open the messages"; the neutral wording was
+sitting right there. That is the second gendered line found in two days, after
+`confront.open`.
+
+`src/i18n/hardcodedText.test.ts` closes the direction that let this happen.
+`translate.test.ts` checks *within* the catalogue and `orphanKeys.test.ts`
+checks catalogue → screens; **nothing checked screens → catalogue**, which is
+exactly the gap eight surfaces shipped through. It caught a straggler on its
+first run.
+
+The lesson worth carrying: a claim that a sweep is complete is worth less than
+the test that makes it complete, and this file recorded the claim before the
+test existed.
+
+### Device test round — 2026-09-10
+
+The first round of findings from an actual handset, against build `993109db`
+(commit `544af9d`). **The headline is that a purchase completed.** That was the
+one hard eligibility requirement, unobserved through six builds and the thing
+every other item on the plan was contingent on. It is done.
+
+The owner also walked a case in **every language** and reported the layout
+sound — so the translated UI has now been seen rendered, which §8 had been
+flagging as unverified since 2026-09-05.
+
+Five defects came back. Four are fixed; one is not explained.
+
+- **The splash red did not match the icon.** It was `#982C23`, which is the
+  colour of the icon's extreme outer edge and not the colour the icon reads as:
+  sampled over every background pixel the red field averages `#902F27`, and
+  `#8C3029` over the central area the eye weights at home-screen size. There was
+  also a visible square, and it was never a wrong hex — `splash-icon.png` was a
+  byte-for-byte copy of `icon.png`, and the icon carries a darker inset panel
+  starting about 60px in, whose edge is that square. The splash mark is now the
+  two bubbles on a transparent ground, keyed out by redness and cropped to
+  758×549, on the icon's own average red. `fb19c40`.
+- **A bar-height of dead space under every docked control.**
+  `useTabBarClearance` returned `BAR + insets.bottom` unconditionally. Its own
+  comment allowed for two readings of the inset — 34 for a home indicator, 0
+  when the navigator had consumed it — and iOS 26's floating native tab bar
+  gives a third: the bar sets its own additional safe-area inset, so
+  `insets.bottom` comes back already carrying it, around 83. The bar was being
+  added twice. An inset at least as tall as the bar can only mean the bar is in
+  it, so that reading is now trusted exactly. Split into a pure
+  `tabBarClearance.ts` because the hook file imports react-native and vitest
+  cannot parse it. `2ad6be3`.
+- **The confession dumped itself and jerked the transcript to the last
+  sentence.** The player spends a case pulling single facts out of someone and
+  the payoff arrived in one frame. It now types out, at a rate derived from
+  length rather than fixed — confessions run 658 to 2717 characters, and any
+  rate that reads well for the short ones makes the long ones thirty-six seconds
+  of watching, so the passage gets an 18-second budget clamped to 55–150 cps.
+  The whole passage is a skip target, Close is held back until the last
+  character lands so the ending cannot be closed out from under itself, and
+  Reduce Motion takes the same instant path. `491e5a8`.
+- **Long labels hardened.** The dock's empty-slot placeholder runs 15 characters
+  in English against 23 in French, in a slot about 19 wide; it shrinks rather
+  than truncating, because a label whose whole job is to say what the slot is
+  for should not end in an ellipsis. The compare button's count is absolutely
+  placed at the right edge, so the label now reserves that space instead of
+  being drawn underneath it. **No translation was touched** — the layout was the
+  thing that was wrong. `de107cc`.
+
+**The bothy cover not loading is NOT explained.** Everything checkable checks
+out and none of it is the cause:
+
+| Checked | Result |
+|---|---|
+| `assets/cases/the-bothy.png` on disk | present, 558,428 bytes |
+| Full PNG decode + per-chunk CRC, all 16 covers | all decode, 1080×1350, `badCRC=none` |
+| Registered in `CASE_ART` | yes, `caseArtAssets.ts` |
+| Case id matches the registry key | yes, `'the-bothy'` |
+| Tracked by git (EAS archives from git) | yes, all 16 tracked, tree clean |
+| A separate pack-level image path | does not exist — `CaseArt` is the only consumer |
+
+The best remaining theory is decode pressure: the home screen is a plain
+ScrollView, not a virtualised list, so all sixteen covers mount at once and the
+ten 1080×1350 ones cost about 5.8MB each decoded — roughly 68MB of bitmaps for
+tiles drawn at about 173pt. Under that, the platform loader giving up on one
+arbitrary image is plausible. **That is a theory, not a diagnosis.**
+
+What shipped is mitigation, not a fix: `CaseArt` now falls back to `CasePoster`
+on `onError`. Before, a cover that would not decode drew as an empty frame — no
+art, no poster, no error, a hole in the grid. `CasePoster` already draws every
+case including the locked treatment, so the failure has no reason to be visible.
+
+**Next device round, check this specifically:** is the bothy tile blank, or is
+it now drawing the generated bar poster? A poster means the decode really is
+failing and the covers should be downscaled to what the grid actually draws.
+Still blank means the theory is wrong and the cause is somewhere not yet looked
+at. Do not close this out without that observation.
+
 ### Already established, do not redo
 
 - `src/ui/theme.ts` — tokens, motion durations, the length-proportional typing
@@ -1304,17 +1405,21 @@ catalogue against the screens.
 
 ### Next session, in order
 
-1. **Watch a purchase complete.** This is the only hard eligibility requirement
-   — the SDK must power at least one in-app purchase — and it has **never been
-   observed**, through five builds. Everything in §7k is code that has only ever
-   been reasoned about. Nothing else on this list matters if this does not work.
-   The dashboard prerequisites are in §7 item 1.
-2. **Hear the audio on a real handset.** Four rounds of fixes, all still unheard
+1. ~~**Watch a purchase complete.**~~ **Done 2026-09-10.** A purchase completed
+   on device against build `993109db`. This was the only hard eligibility
+   requirement — the SDK must power at least one in-app purchase — and it had
+   gone unobserved through six builds while everything else on this list waited
+   behind it. §7k is no longer code that has only ever been reasoned about.
+2. **Confirm the five device fixes on build `a6dae338`** (§8, "Device test
+   round"). Four are fixes; the fifth is mitigation for a cause that was never
+   found, and that section says exactly what to look at to settle it: **is the
+   bothy tile blank, or is it now drawing the generated bar poster?**
+3. **Hear the audio on a real handset.** Four rounds of fixes, all still unheard
    by a human (§7j). Android specifically, because the cause was an Android
-   audio-session flag.
-3. Evidence board craft pass (§8) — the highest-value design work remaining, and
-   the Design Award is judged on craft alone.
-4. Then Tasks 15, 17–21.
+   audio-session flag. This is now the oldest unverified thing in the project.
+4. ~~Evidence board craft pass~~ **Done 2026-09-05** (§8), and seen on a device
+   2026-09-10.
+5. Then Tasks 15, 17–21.
 
    The two items that headed this list for weeks — merging
    `feat/accounts-settings-i18n`, and the LICENSE and icon — are all **done**,
