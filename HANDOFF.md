@@ -1383,11 +1383,19 @@ on `onError`. Before, a cover that would not decode drew as an empty frame — n
 art, no poster, no error, a hole in the grid. `CasePoster` already draws every
 case including the locked treatment, so the failure has no reason to be visible.
 
-**Next device round, check this specifically:** is the bothy tile blank, or is
-it now drawing the generated bar poster? A poster means the decode really is
-failing and the covers should be downscaled to what the grid actually draws.
-Still blank means the theory is wrong and the cause is somewhere not yet looked
-at. Do not close this out without that observation.
+**Answered on 2026-09-10, round 2: the cover loaded.** Same case, and this time
+the art drew. So the failure is **intermittent**, not a broken asset — which is
+what the decode-pressure theory predicts, since which image the loader gives up
+on is arbitrary. It also means every check in the table above was right to come
+back clean.
+
+Left as it is, deliberately. The `onError` fallback means the worst case is a
+generated poster instead of a hole in the grid, and an intermittent symptom seen
+twice is not enough to justify re-encoding sixteen committed covers this close
+to the deadline. If it recurs, the fix is to downscale the ten 1080×1350 covers
+to what the grid actually draws — tiles are about 173pt, so 640px wide is
+already generous — which would take the decoded budget from roughly 68MB to
+under 30MB.
 
 ### Device test round 2 — 2026-09-10
 
@@ -1450,12 +1458,9 @@ that began with a capital. The string that shipped was `on the record`. Widened
 to `[A-Za-z]`, verified to catch the exact line that got through, and the suite
 stays green — so it was not producing false positives either.
 
-**Still owed from round 1:** whether the bothy tile draws blank or draws the
-generated poster. Note that the round-1 observation was made on a *Debug* build,
-which holds materially more memory live than Release — so the decode-pressure
-theory should be re-tested on `preview` before any of the sixteen covers is
-re-encoded. Do not downscale committed art on the strength of a Debug-build
-observation.
+**Round 1's open question is closed:** the bothy cover loaded this time, so the
+failure is intermittent rather than a broken asset. The round-1 section above
+says what that does and does not justify. Nothing was re-encoded.
 
 ### Already established, do not redo
 
