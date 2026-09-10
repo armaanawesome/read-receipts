@@ -268,8 +268,8 @@ export const EN = {
    * neutral wording was sitting right there.
    */
   'briefing.open': 'Open the messages',
-  'claim.pin': 'Tap to pin it to the board',
-  'claim.unpin': 'Slot {n} — tap to unpin',
+  'claim.heading': 'Put on the record',
+  'claim.onRecord': 'on the record',
 
   /*
    * Screen-reader-only strings. They were the last English left in the app,
@@ -662,8 +662,8 @@ const ES: Catalogue = {
   'thread.rowLabelOne': '{title}. 1 sin leer.',
   'thread.rowLabelNone': '{title}. Ningún mensaje sin leer.',
   'briefing.open': 'Abrir los mensajes',
-  'claim.pin': 'Toca para fijarla en el tablero',
-  'claim.unpin': 'Ranura {n}: toca para soltarla',
+  'claim.heading': 'Anotar en el expediente',
+  'claim.onRecord': 'en el expediente',
 
   'a11y.volume': 'Volumen de los efectos de sonido',
   'a11y.loadingCases': 'Cargando casos',
@@ -1002,8 +1002,8 @@ const FR: Catalogue = {
   'thread.rowLabelOne': '{title}. 1 non lu.',
   'thread.rowLabelNone': '{title}. Aucun message non lu.',
   'briefing.open': 'Ouvrir les messages',
-  'claim.pin': 'Touche pour l’épingler au tableau',
-  'claim.unpin': 'Emplacement {n} — touche pour la retirer',
+  'claim.heading': 'Noter au dossier',
+  'claim.onRecord': 'au dossier',
 
   'a11y.volume': 'Volume des effets sonores',
   'a11y.loadingCases': 'Chargement des affaires',
@@ -1340,8 +1340,8 @@ const DE: Catalogue = {
   'thread.rowLabelOne': '{title}. 1 ungelesen.',
   'thread.rowLabelNone': '{title}. Keine ungelesenen Nachrichten.',
   'briefing.open': 'Die Nachrichten öffnen',
-  'claim.pin': 'Zum Anheften an die Tafel tippen',
-  'claim.unpin': 'Platz {n} — zum Lösen tippen',
+  'claim.heading': 'Zu Protokoll nehmen',
+  'claim.onRecord': 'zu Protokoll',
 
   'a11y.volume': 'Lautstärke der Soundeffekte',
   'a11y.loadingCases': 'Fälle werden geladen',
@@ -1673,8 +1673,8 @@ const PT_BR: Catalogue = {
   'thread.rowLabelOne': '{title}. 1 não lida.',
   'thread.rowLabelNone': '{title}. Nenhuma mensagem não lida.',
   'briefing.open': 'Abrir as mensagens',
-  'claim.pin': 'Toque para fixá-la no quadro',
-  'claim.unpin': 'Espaço {n} — toque para soltar',
+  'claim.heading': 'Registrar',
+  'claim.onRecord': 'no registro',
 
   'a11y.volume': 'Volume dos efeitos sonoros',
   'a11y.loadingCases': 'Carregando casos',

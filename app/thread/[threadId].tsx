@@ -15,8 +15,7 @@ export default function ThreadScreen() {
   const pinnedClaimIds = useCaseStore((s) => s.pinnedClaimIds);
   const togglePin = useCaseStore((s) => s.togglePin);
   const openThread = useCaseStore((s) => s.openThread);
-  const readMessageIds = useCaseStore((s) => s.readMessageIds);
-  const readCount = readMessageIds.length;
+  const readCount = useCaseStore((s) => s.readMessageIds.length);
   const [sheetFor, setSheetFor] = useState<string | null>(null);
 
   const openThreadData = script?.threads.find((t) => t.id === threadId);
@@ -84,9 +83,6 @@ export default function ThreadScreen() {
         sender={sender}
         isOwn={active?.senderId === PLAYER_ID}
         pinnedClaimIds={pinnedClaimIds}
-        /* Reading the message is what records its claims, so that is what this
-           asks. Pinning is a board slot and says so separately - see ClaimMenu. */
-        recorded={active !== null && readMessageIds.includes(active.id)}
         reduceMotion={reduceMotion}
         onPick={(claim) => {
           togglePin(claim.id);
