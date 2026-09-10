@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import { theme } from '@/ui/theme';
+import { useTabBarClearance } from '@/ui/useTabBarClearance';
 import { BriefingScreen } from '@/ui/BriefingScreen';
 import { clockOf } from '@/ui/timeScale';
 import { useCaseStore } from '@/state/caseStore';
@@ -32,6 +33,8 @@ export default function ThreadsScreen() {
   const solved = useCaseStore((s) => s.solved);
   const replaying = useCaseStore((s) => s.replaying);
   const [briefed, setBriefed] = useState(false);
+  // Read before the early returns below, because hooks cannot be conditional.
+  const clearance = useTabBarClearance();
 
   /**
    * Continue hands the conversation off through here rather than linking
@@ -109,7 +112,10 @@ export default function ThreadsScreen() {
       {/* `flex: 1` is not decoration here. The scroller is now a child of a flex
           column rather than the screen itself, and without it a ScrollView takes
           its content height and stops scrolling. */}
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={[styles.content, { paddingBottom: clearance + theme.space.lg }]}
+      >
       {threads.map((t, i) => (
         <ThreadRow
           key={t.id}

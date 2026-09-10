@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { theme } from './theme';
+import { useTabBarClearance } from './useTabBarClearance';
 import { useTranslator } from '@/i18n/useTranslator';
 import { useReduceMotion } from '@/settings/useReduceMotion';
 import { useCaseStore } from '@/state/caseStore';
@@ -76,7 +76,11 @@ export function CaseClosedScreen({
   const t = useTranslator();
   const router = useRouter();
   const reduceMotion = useReduceMotion();
-  const insets = useSafeAreaInsets();
+  // The raw inset was wrong here for the reason tabBarClearance.ts documents:
+  // it reads bar-inclusive under iOS 26 native tabs and bar-exclusive elsewhere,
+  // so trusting it directly leaves these buttons under the bar on any device
+  // that reports the second kind.
+  const clearance = useTabBarClearance();
   const cases = useLocalisedCases();
   const { entitlementIds } = useEntitlements();
   const restart = useCaseStore((s) => s.restart);
@@ -232,7 +236,7 @@ export function CaseClosedScreen({
         </View>
       ) : null}
 
-      <View style={[styles.actions, { paddingBottom: insets.bottom }]}>
+      <View style={[styles.actions, { paddingBottom: clearance }]}>
         {next ? (
           <Pressable
             onPress={openNext}

@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useReduceMotion } from '@/settings/useReduceMotion';
 import { theme } from './theme';
+import { useTabBarClearance } from './useTabBarClearance';
 import { useTranslator } from '@/i18n/useTranslator';
 import { clockOf } from './timeScale';
 import type { CaseScript } from '@/engine';
@@ -23,6 +24,10 @@ interface Props {
 export function BriefingScreen({ script, onStart }: Props) {
   const t = useTranslator();
   const reduceMotion = useReduceMotion();
+  // The native tab bar floats over this screen. Without this the CTA below
+  // the brief is drawn underneath it on any case whose brief is long enough
+  // to push it to the bottom - which is why it looked case-dependent.
+  const clearance = useTabBarClearance();
   const b = script.briefing;
   if (!b) return null;
 
@@ -40,7 +45,10 @@ export function BriefingScreen({ script, onStart }: Props) {
   ];
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.root}
+      contentContainerStyle={[styles.content, { paddingBottom: clearance + theme.space.lg }]}
+    >
       <Animated.View
         entering={reduceMotion ? undefined : FadeIn.duration(theme.motion.base)}
         style={styles.sheet}
