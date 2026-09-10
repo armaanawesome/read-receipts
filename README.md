@@ -59,7 +59,7 @@ native module.
 ```mermaid
 flowchart LR
     subgraph pure["pure TypeScript, zero React Native imports (enforced by boundary.test.ts)"]
-        content["content/cases/\n15 case scripts"] --> engine["src/engine/\ncontradiction · anchor · motive\nconfrontation · accusation"]
+        content["content/cases/\n16 case scripts"] --> engine["src/engine/\ncontradiction · anchor · motive\nconfrontation · accusation"]
     end
     engine --> state["src/state/\nZustand store"]
     rc["src/entitlements/\nRevenueCat Test Store"] --> state
@@ -78,17 +78,19 @@ and only names a suspect right or wrong once that count is complete.
 Otherwise a player could brute-force the killer by tapping every suspect in
 turn.
 
-## The fifteen cases
+## The sixteen packs
 
-15 cases, 769 messages, roughly 19,800 words in the messages alone, before
-briefings and confessions. Each case ships with its own test file; a shared
-contract in `content/cases/caseContract.ts` runs an exhaustive pairwise scan
+16 packs — a tutorial plus 15 cases — 795 messages, roughly 20,400 words in
+the messages alone, before briefings and confessions. Each case ships with its
+own test file; a shared contract in `content/cases/caseContract.ts` runs an
+exhaustive pairwise scan
 of every claim in every case and fails if two claims contradict without the
 author declaring it. `docs/pack-ledger.md` is the uniqueness contract behind
 them: no two packs share the same shape of lie, and it's checked mechanically
 in `content/cases/ledger.test.ts`.
 
-Packs 1–3 are free. The rest unlock through the RevenueCat entitlement below.
+The tutorial and Packs 1–3 are free. The rest unlock through the RevenueCat
+entitlement below.
 
 | # | Title | Hook |
 |---|---|---|
@@ -123,9 +125,11 @@ makes the Next Gen category reachable without a store listing.
   restore. Purchase outcomes are a discriminated union
   (`purchased` / `cancelled` / `failed`) rather than a boolean, so a
   cancelled sheet is never confused with a failed transaction in the UI.
-- `src/entitlements/ids.ts`: the entitlement identifier, `case_pack_1`, kept
-  in its own zero-import module so case content can reference it without
-  pulling `react-native-purchases` into the engine's test suite.
+- `src/entitlements/ids.ts`: the entitlement identifier, `all_cases`, kept in
+  its own zero-import module so case content can reference it without pulling
+  `react-native-purchases` into the engine's test suite. The retired
+  `case_pack_1` is still honoured, because deleting an id would revoke access
+  from anyone who already bought under it.
 - `src/entitlements/keyPolicy.ts`: decides whether the SDK gets configured at
   all. A Test Store key only works in a Debug build. This module keeps that
   key from ever reaching a Release build, where the SDK would otherwise show
@@ -153,9 +157,13 @@ providers → Test Store**, and put it in `.env` as
 skip this step; everything else still works.
 
 ```bash
-npm test          # engine, state, entitlements, content: plain Node, no simulator
-npx tsc --noEmit   # typecheck
+./check.cmd       # typecheck + the whole suite. Plain Node, no simulator.
 ```
+
+Run `check.cmd` rather than `npx vitest` directly. It `cd`s to the project root
+first, and vitest launched from a parent directory collects unrelated projects
+and resolves `tsc` to a squatter package of the same name. Both failures look
+alarming and neither is real.
 
 To run the app itself, this project builds on EAS rather than a local
 Android SDK or Xcode. Two build profiles do two different jobs:
@@ -166,8 +174,14 @@ Android SDK or Xcode. Two build profiles do two different jobs:
 | `development` | Debug | Demo a real purchase. Needs Metro running (`expo start --dev-client`). |
 
 ```bash
-npx eas-cli build --profile preview --platform android
+npm run build:play           # iOS, Release  - play the game
+npm run build:play:android   # Android, Release
+npm run build:purchase       # iOS, Debug    - demo a real purchase
 ```
+
+The profile is in the script name on purpose. Choosing it by hand on the
+command line is how a Debug build once went out as the one to judge the speed
+on.
 
 See [`docs/BUILDING.md`](docs/BUILDING.md) for the full build pipeline,
 including why those two profiles exist and the failure mode they were built
@@ -181,16 +195,50 @@ versions.
 ## Testing
 
 ```
-npm test
- Test Files  34 passed (34)
-      Tests  595 passed (595)
+./check.cmd
+ Test Files  140 passed (140)
+      Tests  4935 passed (4935)
 ```
 
 Coverage on the engine and state layers (`src/engine/`, `src/state/`) is
-93.8% statements / 90.2% branches. Every case pack, the contradiction
+94.8% statements / 91.9% branches. Every case pack, the contradiction
 validator, the accusation gate, and the entitlement key policy each have
 their own test file; the full list is under `src/engine/*.test.ts`,
 `src/entitlements/*.test.ts`, and `content/cases/*.test.ts`.
+
+## Working on this
+
+Where things live, and the rule that holds each one in place:
+
+| Path | What it is | The rule |
+|---|---|---|
+| `src/engine/` | the rules: contradiction, anchor, motive, accusation | Pure TypeScript. Importing react-native, expo or react here fails `boundary.test.ts`. |
+| `content/cases/` | the 16 case scripts | Data, never logic. Validated at import by `loadCase()`, so a broken case fails at startup rather than mid-story. |
+| `src/state/` | the Zustand store | The only mutable game state. |
+| `app/` | expo-router screens | Thin routing. Decides nothing about the mystery. |
+| `src/i18n/strings.ts` | the UI string catalogue | `EN` is the source of truth; es, fr, de and pt-BR are `Partial<Catalogue>`. |
+| `src/ui/` | components | `.tsx` cannot be unit-tested here (vitest cannot parse react-native), so component invariants are asserted by reading the source as text — see `bubbleMemo.test.ts` for the pattern. |
+
+Four things that have already cost somebody a day. They are tests now, so you
+will meet them as a red suite rather than as advice:
+
+- **No visible English outside the catalogue.** `hardcodedText.test.ts` reads
+  every screen and fails on a sentence sitting inside a `<Text>` that isn't a
+  `t()` call. It shipped one anyway, because the pattern required a capital
+  first letter and the string was lowercase.
+- **An English fix does not imply a translation fix.** Some locales don't have
+  the problem the English had. Mirroring an edit into all four broke a voice
+  test once. Check first.
+- **A green suite is not a playthrough.** It proves no case is unsolvable and no
+  thread unreachable. It proves nothing about whether a case is enjoyable or a
+  purchase completes. Every content defect so far was found by reading.
+- **Scope commits to explicit paths.** Never `git add -A`; it has swept a
+  half-written file into a commit here.
+
+`AGENTS.md` is the long form of this, and the same rules apply to a person.
+`HANDOFF.md` is the running project log — current state, open bugs, hard-won
+build constraints, what's still owed. It is long because it is a log; read the
+section you need, not the whole file.
 
 ## Build
 

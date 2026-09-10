@@ -9,15 +9,19 @@
 /**
  * MUST match the entitlement identifier in the RevenueCat dashboard exactly.
  *
- * It is `case_pack_1` — one digit, no leading zero. Confirmed against the
- * dashboard on 2026-08-11 after a real purchase unlocked nothing.
+ * It is `all_cases`. Read that from the dashboard, never from a case id or a
+ * product id, and never "tidy" it to match either of those.
  *
- * This was `case_pack_01`, which is the worst kind of wrong: `purchase()` still
- * succeeds, the receipt is still valid, customer info comes back with an
- * entitlement this app then fails to recognise, and the player pays for nothing
- * with no error anywhere. Do not "tidy" this to match a case id or a product id
- * — `diagnoseEntitlements()` in revenuecat.ts is the thing that proves what the
- * dashboard actually grants.
+ * Why this constant is dangerous to get wrong: a mismatch does not throw
+ * anywhere. `purchase()` still succeeds, the receipt is still valid, customer
+ * info comes back carrying an entitlement this app then fails to recognise,
+ * and the player pays for nothing with no error on any screen. It has happened
+ * twice — once as `case_pack_01` against a dashboard reading `case_pack_1`,
+ * and again when the pack was re-created as `all_cases` (see
+ * LEGACY_PACK_ENTITLEMENTS below).
+ *
+ * `diagnoseEntitlements()` in revenuecat.ts is the only thing that proves what
+ * the dashboard actually grants. Run it before believing this string.
  */
 export const CASE_PACK_ENTITLEMENT = 'all_cases';
 
