@@ -21,8 +21,15 @@ import { join, sep } from 'node:path';
 /** Screen-reader labels are the easy ones to miss: nothing on screen shows them. */
 const A11Y_LITERAL = /accessibilityLabel="[^"]+"/g;
 
-/** A capitalised English sentence sitting directly inside a Text element. */
-const VISIBLE_LITERAL = /<Text[^>]*>\s*[A-Z][a-z]+ [a-z][^<{}]{6,}/g;
+/**
+ * An English sentence sitting directly inside a Text element.
+ *
+ * The first letter is `[A-Za-z]`, not `[A-Z]`, and that one character is the
+ * whole reason `ClaimMenu` shipped the bare string `on the record` inside a
+ * five-language game. The guard only ever looked for sentences that began
+ * with a capital, so a lowercase label walked straight past it.
+ */
+const VISIBLE_LITERAL = /<Text[^>]*>\s*[A-Za-z][a-z]+ [a-z][^<{}]{6,}/g;
 
 /**
  * `app/debug.tsx` is the Test Store harness — a developer screen reached only
