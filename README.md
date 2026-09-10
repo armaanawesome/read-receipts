@@ -208,6 +208,11 @@ their own test file; the full list is under `src/engine/*.test.ts`,
 
 ## Working on this
 
+New to the project? Read [`docs/ORIENTATION.md`](docs/ORIENTATION.md) first —
+ten minutes, and it covers what is decided, what is still open, and the four
+things that will otherwise confuse you. This section is the reference you come
+back to.
+
 Where things live, and the rule that holds each one in place:
 
 | Path | What it is | The rule |

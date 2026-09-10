@@ -72,9 +72,11 @@ accuse.
 | Onboarding | ✅ animated landing (sign in / play as guest) → Bakehouse, with the walkthrough running **inside** the case as coach marks. Re-armed from Settings |
 | Case closed | ✅ closed-file header, proof tally, coda, and three exits: next case, all cases, play again |
 
-**Tests:** `.\check.cmd` → **4942 passing across 141 files**, typecheck clean,
-coverage 94.3% statements / 91.1% branches on the measured directories. Verified
-by running the suite on 2026-09-04, not copied forward. The files added since the
+**Tests:** `.\check.cmd` → **4935 passing across 140 files**, typecheck clean,
+coverage 94.8% statements / 91.9% branches on the measured directories. Verified
+by running the suite on 2026-09-10, not copied forward. The count went DOWN
+because `claimMenuCraft.test.ts` was deleted with the change it guarded — see
+the 2026-09-10 revert below. The files added since the
 last count are `src/audio/beds.test.ts`, `src/ui/claimMarking.test.ts`,
 `src/ui/chatWallpaper.test.ts`, `src/entitlements/pricing.test.ts` and
 `src/entitlements/offering.test.ts`. Most of the growth is
@@ -93,7 +95,7 @@ number has been wrong in this file twice — it said 86 when 15 packs existed, a
 in a document does not fail.
 
 **A green suite is not a playthrough.** It is worth being precise about what the
-4942 actually prove: that no case is unsolvable, no thread is unreachable, no
+4935 actually prove: that no case is unsolvable, no thread is unreachable, no
 contradiction fires that the author did not declare, and no translation drops an
 id. They prove nothing whatever about whether a case is *enjoyable*, whether a
 screen looks right, or whether a purchase completes.
@@ -1461,6 +1463,67 @@ stays green — so it was not producing false positives either.
 **Round 1's open question is closed:** the bothy cover loaded this time, so the
 failure is intermittent rather than a broken asset. The round-1 section above
 says what that does and does not justify. Nothing was re-encoded.
+
+### The claim-menu change was reverted — 2026-09-10
+
+The round-2 report was: in **one** group chat in The Bothy, hold a message and
+hold it again and it does not turn blue. The fix that shipped changed
+`ClaimMenu` for all sixteen cases — the blue confirmation became a permanent
+heading plus a per-slot hint. The owner rejected it the moment it was on a
+device, and was right to: a report about one chat is not a licence to change
+every chat.
+
+Reverted in `9b74c7e`. The menu is exactly what it was — pinning a claim turns
+its label blue with "on the record" underneath. `claim.heading` is back,
+`claim.pin` / `claim.unpin` are gone, and `claimMenuCraft.test.ts` with them,
+which is why the test count fell by seven.
+
+One line did not go back. The label was the bare English string `on the record`
+in a five-language game; it now reads `claim.onRecord` from the catalogue.
+Identical words in English, and the other four locales stop showing English.
+
+**On the underlying bug, which is still there and is not Bothy-specific.**
+Nothing in `t-group`'s data is wrong: nine claim ids in the pack, all unique,
+labels matching the display names (`keir` is "Iain", `morven` is "Anne",
+`pris` is "Sandra"). Two mechanics produce that exact symptom, and both were
+measured across all sixteen packs:
+
+- **The board holds two slots.** `togglePin` ends in `.slice(-2)`, so a third
+  pin silently evicts the oldest. `t-group` is four claim-bearing messages in
+  one conversation — the four alibis — so it is the natural place to try to pin
+  more than two. Ten threads in the game have four or more.
+- **Adjacent claim bubbles overlap.** Two claim-bearing messages from the same
+  sender under five minutes apart render 2pt apart, and each carries a 10pt
+  `hitSlop`, so an ~18pt band belongs to both. **14 such pairs exist**, p3+p4
+  here among them.
+
+Neither has a Bothy-only fix, and neither was fixed. The cheap one, if it comes
+back: drop the vertical `hitSlop` on claim bubbles — invisible, one line, and
+you always get the bubble you pressed. The eviction is the bigger one and every
+honest fix for it changes what a player sees.
+
+### A second person joined — 2026-09-10
+
+Read `docs/ORIENTATION.md` first if that is you. It is ten minutes and it
+covers what is decided, what is open, and the four things that otherwise
+confuse everybody: the Release build cannot open twelve of the sixteen cases,
+the entitlement id is a security boundary, a green suite is not a playthrough,
+and the player has no gender.
+
+Two rules came out of this and both are written down where they execute rather
+than where they rot:
+
+- **Push in the same turn as the commit** (`AGENTS.md` §3). An unpushed commit
+  is invisible to the other person.
+- **Fetch before starting any task** (`CLAUDE.md`). Planning against a stale
+  checkout produces a confident plan for code that no longer exists.
+
+The README's numbers were all from August and were corrected in the same pass:
+15 cases (16), 769 messages (795), 34 test files and 595 tests (140 and 4935),
+93.8/90.2 coverage (94.8/91.9), and the entitlement named `case_pack_1` when
+the dashboard has read `all_cases` since the pack was re-created. `ids.ts` had
+a docstring asserting `case_pack_1` directly above
+`export const CASE_PACK_ENTITLEMENT = 'all_cases'`.
 
 ### Already established, do not redo
 
