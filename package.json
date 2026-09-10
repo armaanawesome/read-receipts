@@ -46,7 +46,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:play": "npx eas-cli@latest build --profile preview --platform ios --non-interactive --no-wait",
+    "build:play:android": "npx eas-cli@latest build --profile preview --platform android --non-interactive --no-wait",
+    "build:purchase": "npx eas-cli@latest build --profile development --platform ios --non-interactive --no-wait"
   },
   "private": true
 }

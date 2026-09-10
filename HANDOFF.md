@@ -171,22 +171,30 @@ and then called `configure()` with it anyway, so every Release build killed
 itself on the splash screen. `src/entitlements/keyPolicy.ts` now decides before
 the SDK is touched, and a Release build runs normally with purchases off.
 
-### Two builds, two jobs
+### Two builds, two jobs — use the npm script, never the raw flag
 
-| Want | Profile | How |
-|---|---|---|
-| **Play and test the game** | `preview` (Release) | Install and open. Standalone — no Metro, no tunnel, no laptop. |
-| **Demo a real purchase** | `development` (Debug) | Needs Metro over a tunnel. |
+| Want | Script | Profile | How |
+|---|---|---|---|
+| **Play and test the game** | `npm run build:play` | `preview` (Release) | Install and open. Standalone — no Metro, no tunnel, no laptop. |
+| **Demo a real purchase** | `npm run build:purchase` | `development` (Debug) | Needs Metro over a tunnel. |
+
+`npm run build:play:android` is the same Release build as an APK, which
+installs straight onto a phone and is the fastest way to look at anything.
+
+**The scripts exist because this section, on its own, did not work.** Build
+`a6dae338` was cut on 2026-09-10 with `--profile development` and handed over
+as a general verification build. It is a Debug binary: dev-mode React with
+every check live, unoptimised Hermes, no dead-code elimination, the dev client
+attached. The player reported that it "lagged a lot everywhere", and it did —
+that is what a Debug build feels like when you try to play a game on it. The
+rule was written down right here and still got typed wrong months of context
+later, so it is now spelled into the command name: `build:play` cannot silently
+be a Debug build.
+
+For the purchase demo, Metro has to stay running:
 
 ```bash
-npx.cmd eas-cli@latest build --profile preview --platform android
-```
-
-That APK installs straight onto a phone and is the fastest way to look at
-anything. For the purchase demo and the submission video:
-
-```bash
-npx.cmd eas-cli@latest build --profile development --platform ios
+npm run build:purchase
 npx.cmd expo start --tunnel --dev-client
 ```
 
