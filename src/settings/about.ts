@@ -41,14 +41,19 @@ export function versionLine(
  * each lives in `src/i18n/strings.ts` next to the other settings strings, so a
  * translator meets the whole screen in one file.
  *
- * NOTE for whoever lands account sync on this branch: the moment progress is
- * uploaded, a line about it belongs here, and this comment is why.
+ * The sync line is not optional. Progress is uploaded to Supabase the moment a
+ * player signs in (src/auth/sync.ts), and for a while this panel still said it
+ * lived only on the device -- a false statement about where personal data goes,
+ * made in five languages. See docs/LEGAL-REVIEW.md, Count 2. If a future change
+ * moves data somewhere new, it belongs in this list in the same commit.
  */
 export const PRIVACY_POINTS: readonly StringKey[] = [
   'settings.privacy.progress',
+  'settings.privacy.account',
   'settings.privacy.purchases',
   'settings.privacy.noTracking',
   'settings.privacy.deletion',
+  'settings.privacy.policy',
 ];
 
 export interface Licence {
@@ -59,8 +64,14 @@ export interface Licence {
 /**
  * Third-party components, not this app's own licence.
  *
- * The repo's own LICENSE file is still Expo's template and does not describe
- * this game, so nothing here claims to.
+ * The repo splits its own licensing in two -- MIT for the code, proprietary for
+ * the cases and assets. See LICENSE and CONTENT-LICENSE. Nothing in this list
+ * claims to describe either.
+ *
+ * A name and a licence type is NOT the notice MIT requires. The full notice
+ * text for every dependency lives in THIRD-PARTY-NOTICES.md at the repo root,
+ * which is what actually discharges the obligation; this list is the in-app
+ * summary that points a curious player at it.
  */
 export const LICENCES: readonly Licence[] = [
   { name: 'React and React Native', licence: 'MIT' },

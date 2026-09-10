@@ -1,0 +1,81 @@
+Read Receipts — content licence
+==============================
+
+Copyright (c) 2026 Armaan Ebrahim. All rights reserved.
+
+WHAT THIS COVERS
+----------------
+
+  - content/cases/**      the sixteen case packs, in every language:
+                          characters, dialogue, claims, contradictions,
+                          solutions, and the order they are revealed in
+  - assets/**             artwork, cover images, icons, audio
+  - docs/storybook.md     and docs/storybook.html
+
+The code is separately licensed under MIT. See the LICENSE file.
+
+THE TERMS
+---------
+
+No part of the work covered by this licence may be reproduced, distributed,
+adapted, translated, publicly performed, or used to train a machine learning
+model, without prior written permission from the copyright holder.
+
+You may:
+
+  - read it
+  - quote short extracts for review, criticism, reporting or teaching, with
+    attribution, as permitted by fair dealing or fair use in your jurisdiction
+  - clone this repository and run the game locally to evaluate, review or
+    contribute to it
+
+You may not:
+
+  - publish or sell the cases, in any medium or any language
+  - ship an application containing them
+  - adapt them into another form, including audio, video or print
+  - use them as training data
+
+CONTRIBUTORS
+------------
+
+A contribution to content/** is licensed inbound to the copyright holder on
+the terms in CONTRIBUTING.md. Contributors retain their own copyright and
+grant the licence set out there. Nothing in this file takes a contributor's
+copyright away.
+
+CONTEST SUBMISSION
+------------------
+
+This repository is a submission to the RevenueCat Shipaton 2026. Judges,
+organisers and their reviewers may read, run, record and evaluate the whole
+work, including everything covered by this licence, for the purpose of judging
+that contest.
+
+WHAT THIS CAN AND CANNOT DO
+---------------------------
+
+Read this part. It is the honest bit.
+
+Until 2026-09-10 this entire repository, including every file listed above,
+carried the MIT licence. MIT is a grant, and a grant that has been made to
+somebody cannot be taken back from them. So:
+
+  - Anyone who obtained a copy of this repository before 2026-09-10 holds an
+    MIT licence to that copy, and this file does not affect it. They may still
+    copy, modify, distribute and sell what they took.
+  - This licence governs the work from 2026-09-10 onward, and every commit
+    made from that date.
+
+Changing it now closes the door. It does not un-open it. The realistic
+consequence is that a copy taken during the window is out there under
+permissive terms, and there is no mechanism to recall it.
+
+Recorded rather than quietly fixed, because whoever reads this next deserves to
+know which risk was eliminated and which one was merely stopped from growing.
+
+CONTACT
+-------
+
+Permission requests, licensing enquiries and anything else about this file: see
+the contact address in PRIVACY.md.

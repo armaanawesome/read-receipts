@@ -1,4 +1,46 @@
+Read Receipts — licensing
+=========================
+
+This repository is licensed in two parts, because it contains two different
+kinds of work.
+
+  1. THE CODE is under the MIT licence, reproduced in full below. Take it,
+     learn from it, ship it in your own project. That is the point.
+
+  2. THE GAME — the case scripts, the artwork and the audio — is NOT under the
+     MIT licence. It is proprietary. See the CONTENT-LICENSE file in this same
+     directory.
+
+WHAT COUNTS AS CODE
+-------------------
+
+The MIT grant below covers every file in this repository EXCEPT:
+
+  - content/cases/**      the sixteen case packs, in every language
+  - assets/**             artwork, cover images, audio
+  - docs/storybook.md     and docs/storybook.html — the case scripts in prose
+
+Those are covered by CONTENT-LICENSE.
+
+Everything else is MIT: src/, app/, supabase/, tools/, the tests, the config,
+the other docs. That includes the deduction engine in src/engine/, which is the
+part most worth reading.
+
+WHY THE SPLIT
+-------------
+
+The engine is a piece of software design and it is more useful shared. The
+cases are the product — roughly twenty thousand words that took months, and
+twelve of the sixteen are what a player pays for. A single MIT licence over
+both granted the world the right to sell the game, which was never the
+intention and was a drafting mistake rather than a decision.
+
+Changed 2026-09-10. See docs/LEGAL-REVIEW.md, Count 1, for the full account
+including what this change cannot undo.
+
+
 The MIT License (MIT)
+=====================
 
 Copyright (c) 2026 Armaan Ebrahim
 
@@ -19,3 +61,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+For the avoidance of doubt: in this file, "the Software" means the files
+described under WHAT COUNTS AS CODE above, and does not include the files
+listed there as excluded.

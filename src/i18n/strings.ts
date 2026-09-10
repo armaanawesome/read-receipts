@@ -66,6 +66,14 @@ export const EN = {
      the next message, and the button skips the rest of the thread. */
 
   'settings.account.section': 'Account',
+  'settings.account.delete': 'Delete account',
+  'settings.account.deleteDetail': 'Deletes your account, your email address and all progress saved to it. Purchases stay on your store account and can be restored.',
+  'settings.account.deleteConfirm': 'Delete this account?',
+  'settings.account.deleteBody': 'This cannot be undone. Your email address and every case you have solved are erased from the server. Progress already on this device stays until you erase it.',
+  'settings.account.deleteKeep': 'Keep my account',
+  'settings.account.deleteGo': 'Delete',
+  'settings.account.deleted': 'Your account has been deleted.',
+  'settings.account.deleteFailed': 'Could not delete the account. Try again, or write to the address in the privacy policy.',
   /* The front door, and the walkthrough that runs inside the demo case rather
      than in front of it. See app/landing.tsx and src/tutorial/steps.ts. */
   'landing.kicker': 'A case in your messages',
@@ -318,23 +326,34 @@ export const EN = {
   'settings.about.version': 'Version',
   'settings.about.privacy': 'What this app stores',
   'settings.about.licences': 'Open-source licences',
+  'settings.about.support': 'If a case brings something up',
+  'settings.support.body': 'A few of these stories deal with grief, and one deals with suicide. If any of it lands close to home, findahelpline.com lists free, confidential services in your country.',
 
   /**
    * The privacy panel, one key per point. `src/settings/about.ts` owns which
    * points appear and in what order; this owns their wording.
    */
-  'settings.privacy.progress': 'Your progress through each case is stored on this device.',
+  'settings.privacy.progress': 'Your progress is saved on this device. If you sign in, it is also saved to your account so it follows you to another device.',
   'settings.privacy.purchases':
     'Purchases are handled by the App Store or Google Play through RevenueCat. This app never sees your payment details.',
   'settings.privacy.noTracking':
     'There are no ads and no analytics or tracking SDKs in this build.',
-  'settings.privacy.deletion': 'Deleting the app deletes your progress with it.',
+  'settings.privacy.deletion': 'Deleting the app clears this device. Progress saved to an account stays until you delete the account, which you can do from the account screen.',
+  'settings.privacy.account': 'An account stores your email address and which cases you have opened, read and solved. Nothing else.',
+  'settings.privacy.policy': 'Full privacy policy and terms: github.com/armaanawesome/read-receipts',
 
   'language.title': 'Language',
   'language.footnote':
     'Changing this translates the app. Case files are translated separately, and any case that has not been translated yet stays in English.',
 
   'signIn.title': 'Sign in',
+  'signIn.age.title': 'One question before you make an account',
+  'signIn.age.body': 'An account saves your progress to a server, so the law asks about age first. The game itself plays without one, and nothing is stored anywhere but this device.',
+  'signIn.age.over': 'I am 16 or older',
+  'signIn.age.under': 'I am under 16',
+  'signIn.age.blocked': 'Accounts are for players aged 16 and over. The game plays in full without one, and your progress is saved on this device.',
+  'signIn.age.backToGame': 'Back to the cases',
+  'signIn.terms': 'Creating an account means you accept the terms and the privacy policy at github.com/armaanawesome/read-receipts.',
   'signIn.heading': 'Take your case notes with you',
   'signIn.why': 'An account carries your progress to another phone.',
   'signIn.createAccount': 'Create account',
@@ -410,7 +429,9 @@ export const EN = {
     'Another death, another phone, another story that does not hold up. Unlock the case pack to keep going.',
   'paywall.bullet.case': 'Twelve more full-length cases',
   'paywall.bullet.suspects': 'New suspects, new contradictions',
-  'paywall.bullet.permanent': 'Yours permanently — this is not a subscription',
+  'paywall.bullet.permanent': 'One payment, not a subscription. It does not renew.',
+  'paywall.licenceNote': 'You are buying a licence to play these cases, not ownership of them. Restore it any time on a device signed in to the same store account.',
+  'paywall.option.perCase': '{price} for each of the {count}',
   /**
    * Sits beside a struck-through reference figure. `{count}` is how many cases
    * the pack unlocks, so this reads as what the pack is worth rather than as a
@@ -513,6 +534,14 @@ const ES: Catalogue = {
      the next message, and the button skips the rest of the thread. */
 
   'settings.account.section': 'Cuenta',
+  'settings.account.delete': 'Eliminar cuenta',
+  'settings.account.deleteDetail': 'Elimina tu cuenta, tu correo electrónico y todo el progreso guardado en ella. Las compras permanecen en tu cuenta de la tienda y se pueden restaurar.',
+  'settings.account.deleteConfirm': '¿Eliminar esta cuenta?',
+  'settings.account.deleteBody': 'Esto no se puede deshacer. Tu correo electrónico y todos los casos que has resuelto se borran del servidor. El progreso que ya está en este dispositivo permanece hasta que lo borres.',
+  'settings.account.deleteKeep': 'Conservar mi cuenta',
+  'settings.account.deleteGo': 'Eliminar',
+  'settings.account.deleted': 'Tu cuenta ha sido eliminada.',
+  'settings.account.deleteFailed': 'No se pudo eliminar la cuenta. Inténtalo de nuevo o escribe a la dirección de la política de privacidad.',
   /* The front door, and the walkthrough that runs inside the demo case rather
      than in front of it. See app/landing.tsx and src/tutorial/steps.ts. */
   'landing.kicker': 'Un caso en tus mensajes',
@@ -706,19 +735,30 @@ const ES: Catalogue = {
   'settings.about.version': 'Versión',
   'settings.about.privacy': 'Qué guarda esta aplicación',
   'settings.about.licences': 'Licencias de código abierto',
+  'settings.about.support': 'Si un caso te remueve algo',
+  'settings.support.body': 'Varias de estas historias hablan del duelo, y una del suicidio. Si algo te toca de cerca, findahelpline.com reúne servicios gratuitos y confidenciales en tu país.',
 
-  'settings.privacy.progress': 'Tu progreso en cada caso se guarda en este dispositivo.',
+  'settings.privacy.progress': 'Tu progreso se guarda en este dispositivo. Si inicias sesión, también se guarda en tu cuenta para que te siga a otro dispositivo.',
   'settings.privacy.purchases':
     'Las compras las gestionan la App Store o Google Play a través de RevenueCat. Esta aplicación nunca ve tus datos de pago.',
   'settings.privacy.noTracking':
     'Esta versión no tiene anuncios ni SDK de analítica o seguimiento.',
-  'settings.privacy.deletion': 'Si eliminas la aplicación, tu progreso se elimina con ella.',
+  'settings.privacy.deletion': 'Eliminar la aplicación borra este dispositivo. El progreso guardado en una cuenta permanece hasta que elimines la cuenta, algo que puedes hacer desde la pantalla de cuenta.',
+  'settings.privacy.account': 'Una cuenta guarda tu correo electrónico y qué casos has abierto, leído y resuelto. Nada más.',
+  'settings.privacy.policy': 'Política de privacidad y términos completos: github.com/armaanawesome/read-receipts',
 
   'language.title': 'Idioma',
   'language.footnote':
     'Esto traduce la aplicación. Los casos se traducen por separado, y cualquier caso todavía sin traducir permanece en inglés.',
 
   'signIn.title': 'Iniciar sesión',
+  'signIn.age.title': 'Una pregunta antes de crear una cuenta',
+  'signIn.age.body': 'Una cuenta guarda tu progreso en un servidor, así que la ley pregunta primero por la edad. El juego funciona sin cuenta, y entonces no se guarda nada fuera de este dispositivo.',
+  'signIn.age.over': 'Tengo 16 años o más',
+  'signIn.age.under': 'Tengo menos de 16 años',
+  'signIn.age.blocked': 'Las cuentas son para jugadores de 16 años o más. El juego se puede jugar entero sin cuenta, y tu progreso se guarda en este dispositivo.',
+  'signIn.age.backToGame': 'Volver a los casos',
+  'signIn.terms': 'Crear una cuenta significa que aceptas los términos y la política de privacidad en github.com/armaanawesome/read-receipts.',
   'signIn.heading': 'Lleva tus notas del caso contigo',
   'signIn.why': 'Una cuenta lleva tu progreso a otro teléfono.',
   'signIn.createAccount': 'Crear cuenta',
@@ -774,7 +814,9 @@ const ES: Catalogue = {
     'Otra muerte, otro teléfono, otra historia que no se sostiene. Desbloquea el pack de casos para seguir.',
   'paywall.bullet.case': 'Doce casos completos más',
   'paywall.bullet.suspects': 'Nuevos sospechosos, nuevas contradicciones',
-  'paywall.bullet.permanent': 'Tuyo para siempre: esto no es una suscripción',
+  'paywall.bullet.permanent': 'Un solo pago, no una suscripción. No se renueva.',
+  'paywall.licenceNote': 'Estás comprando una licencia para jugar estos casos, no su propiedad. Puedes restaurarla en cualquier momento en un dispositivo con la misma cuenta de la tienda.',
+  'paywall.option.perCase': '{price} por cada uno de los {count}',
   'paywall.empty': 'La tienda no tiene nada que vender ahora mismo. Inténtalo de nuevo en un momento.',
   'paywall.unreachable': 'No se pudo conectar con la tienda.',
   'paywall.failed': 'La compra no se completó. No se te ha cobrado.',
@@ -849,6 +891,14 @@ const FR: Catalogue = {
      the next message, and the button skips the rest of the thread. */
 
   'settings.account.section': 'Compte',
+  'settings.account.delete': 'Supprimer le compte',
+  'settings.account.deleteDetail': 'Supprime votre compte, votre adresse e-mail et toute la progression qui y est enregistrée. Les achats restent sur votre compte de la boutique et peuvent être restaurés.',
+  'settings.account.deleteConfirm': 'Supprimer ce compte ?',
+  'settings.account.deleteBody': 'C’est irréversible. Votre adresse e-mail et toutes les affaires que vous avez résolues sont effacées du serveur. La progression déjà présente sur cet appareil reste jusqu’à ce que vous l’effaciez.',
+  'settings.account.deleteKeep': 'Garder mon compte',
+  'settings.account.deleteGo': 'Supprimer',
+  'settings.account.deleted': 'Votre compte a été supprimé.',
+  'settings.account.deleteFailed': 'Impossible de supprimer le compte. Réessayez, ou écrivez à l’adresse indiquée dans la politique de confidentialité.',
   /* The front door, and the walkthrough that runs inside the demo case rather
      than in front of it. See app/landing.tsx and src/tutorial/steps.ts. */
   'landing.kicker': 'Une affaire dans vos messages',
@@ -1048,20 +1098,30 @@ const FR: Catalogue = {
   'settings.about.version': 'Version',
   'settings.about.privacy': 'Ce que cette app conserve',
   'settings.about.licences': 'Licences open source',
+  'settings.about.support': 'Si une affaire remue quelque chose',
+  'settings.support.body': 'Plusieurs de ces histoires parlent de deuil, et l’une d’elles de suicide. Si cela vous touche de près, findahelpline.com recense des services gratuits et confidentiels dans votre pays.',
 
-  'settings.privacy.progress':
-    'Votre progression dans chaque affaire est conservée sur cet appareil.',
+  'settings.privacy.progress': 'Votre progression est enregistrée sur cet appareil. Si vous vous connectez, elle est aussi enregistrée sur votre compte pour vous suivre sur un autre appareil.',
   'settings.privacy.purchases':
     'Les achats sont gérés par l’App Store ou Google Play via RevenueCat. Cette app ne voit jamais vos informations de paiement.',
   'settings.privacy.noTracking':
     'Cette version ne contient ni publicité, ni outil d’analyse ou de suivi.',
-  'settings.privacy.deletion': 'Supprimer l’app supprime votre progression avec elle.',
+  'settings.privacy.deletion': 'Supprimer l’app efface cet appareil. La progression enregistrée sur un compte reste jusqu’à la suppression du compte, possible depuis l’écran du compte.',
+  'settings.privacy.account': 'Un compte conserve votre adresse e-mail et les affaires que vous avez ouvertes, lues et résolues. Rien d’autre.',
+  'settings.privacy.policy': 'Politique de confidentialité et conditions complètes : github.com/armaanawesome/read-receipts',
 
   'language.title': 'Langue',
   'language.footnote':
     'Ceci traduit l’application. Les affaires sont traduites séparément, et toute affaire qui n’a pas encore été traduite reste en anglais.',
 
   'signIn.title': 'Connexion',
+  'signIn.age.title': 'Une question avant de créer un compte',
+  'signIn.age.body': 'Un compte enregistre votre progression sur un serveur, la loi demande donc d’abord votre âge. Le jeu fonctionne sans compte, et rien n’est alors conservé ailleurs que sur cet appareil.',
+  'signIn.age.over': 'J’ai 16 ans ou plus',
+  'signIn.age.under': 'J’ai moins de 16 ans',
+  'signIn.age.blocked': 'Les comptes sont réservés aux joueurs de 16 ans et plus. Le jeu se joue entièrement sans compte, et votre progression est enregistrée sur cet appareil.',
+  'signIn.age.backToGame': 'Retour aux affaires',
+  'signIn.terms': 'Créer un compte vaut acceptation des conditions et de la politique de confidentialité sur github.com/armaanawesome/read-receipts.',
   'signIn.heading': 'Emportez vos notes d’enquête',
   'signIn.why': 'Un compte transfère votre progression sur un autre téléphone.',
   'signIn.createAccount': 'Créer un compte',
@@ -1117,7 +1177,9 @@ const FR: Catalogue = {
     'Une autre mort, un autre téléphone, une autre histoire qui ne tient pas. Déverrouillez le pack pour continuer.',
   'paywall.bullet.case': 'Douze affaires complètes de plus',
   'paywall.bullet.suspects': 'De nouveaux suspects, de nouvelles contradictions',
-  'paywall.bullet.permanent': 'À vous définitivement — ce n’est pas un abonnement',
+  'paywall.bullet.permanent': 'Un seul paiement, pas un abonnement. Rien ne se renouvelle.',
+  'paywall.licenceNote': 'Vous achetez une licence pour jouer ces affaires, pas leur propriété. Vous pouvez la restaurer à tout moment sur un appareil connecté au même compte de boutique.',
+  'paywall.option.perCase': '{price} pour chacune des {count}',
   'paywall.empty': 'La boutique n’a rien à proposer pour le moment. Réessayez dans un instant.',
   'paywall.unreachable': 'Impossible de joindre la boutique.',
   'paywall.failed': 'L’achat n’a pas abouti. Vous n’avez pas été débité.',
@@ -1190,6 +1252,14 @@ const DE: Catalogue = {
      the next message, and the button skips the rest of the thread. */
 
   'settings.account.section': 'Konto',
+  'settings.account.delete': 'Konto löschen',
+  'settings.account.deleteDetail': 'Löscht dein Konto, deine E-Mail-Adresse und den gesamten dort gespeicherten Fortschritt. Käufe bleiben in deinem Store-Konto und lassen sich wiederherstellen.',
+  'settings.account.deleteConfirm': 'Dieses Konto löschen?',
+  'settings.account.deleteBody': 'Das lässt sich nicht rückgängig machen. Deine E-Mail-Adresse und alle gelösten Fälle werden vom Server gelöscht. Fortschritt, der schon auf diesem Gerät liegt, bleibt, bis du ihn löschst.',
+  'settings.account.deleteKeep': 'Konto behalten',
+  'settings.account.deleteGo': 'Löschen',
+  'settings.account.deleted': 'Dein Konto wurde gelöscht.',
+  'settings.account.deleteFailed': 'Das Konto konnte nicht gelöscht werden. Versuche es erneut, oder schreib an die Adresse in der Datenschutzerklärung.',
   /* The front door, and the walkthrough that runs inside the demo case rather
      than in front of it. See app/landing.tsx and src/tutorial/steps.ts. */
   'landing.kicker': 'Ein Fall in deinen Nachrichten',
@@ -1385,19 +1455,30 @@ const DE: Catalogue = {
   'settings.about.version': 'Version',
   'settings.about.privacy': 'Was diese App speichert',
   'settings.about.licences': 'Open-Source-Lizenzen',
+  'settings.about.support': 'Wenn ein Fall etwas auslöst',
+  'settings.support.body': 'Mehrere dieser Geschichten handeln von Trauer, eine von Suizid. Falls dich etwas davon persönlich trifft: findahelpline.com listet kostenlose, vertrauliche Angebote in deinem Land.',
 
-  'settings.privacy.progress': 'Dein Fortschritt in jedem Fall wird auf diesem Gerät gespeichert.',
+  'settings.privacy.progress': 'Dein Fortschritt wird auf diesem Gerät gespeichert. Wenn du dich anmeldest, wird er auch in deinem Konto gespeichert, damit er dir auf ein anderes Gerät folgt.',
   'settings.privacy.purchases':
     'Käufe werden vom App Store oder von Google Play über RevenueCat abgewickelt. Diese App sieht deine Zahlungsdaten nie.',
   'settings.privacy.noTracking':
     'In dieser Version gibt es keine Werbung und keine Analyse- oder Tracking-SDKs.',
-  'settings.privacy.deletion': 'Die App zu löschen löscht deinen Fortschritt mit.',
+  'settings.privacy.deletion': 'Die App zu löschen leert dieses Gerät. Fortschritt in einem Konto bleibt, bis du das Konto löschst. Das geht im Kontobereich.',
+  'settings.privacy.account': 'Ein Konto speichert deine E-Mail-Adresse und welche Fälle du geöffnet, gelesen und gelöst hast. Sonst nichts.',
+  'settings.privacy.policy': 'Vollständige Datenschutzerklärung und Nutzungsbedingungen: github.com/armaanawesome/read-receipts',
 
   'language.title': 'Sprache',
   'language.footnote':
     'Das übersetzt die App. Fälle werden separat übersetzt, und jeder noch nicht übersetzte Fall bleibt auf Englisch.',
 
   'signIn.title': 'Anmelden',
+  'signIn.age.title': 'Eine Frage, bevor du ein Konto anlegst',
+  'signIn.age.body': 'Ein Konto speichert deinen Fortschritt auf einem Server, deshalb fragt das Gesetz zuerst nach dem Alter. Das Spiel läuft auch ohne Konto, und dann bleibt alles auf diesem Gerät.',
+  'signIn.age.over': 'Ich bin 16 oder älter',
+  'signIn.age.under': 'Ich bin unter 16',
+  'signIn.age.blocked': 'Konten sind für Spielerinnen und Spieler ab 16. Das Spiel lässt sich ohne Konto vollständig spielen, und dein Fortschritt bleibt auf diesem Gerät.',
+  'signIn.age.backToGame': 'Zurück zu den Fällen',
+  'signIn.terms': 'Mit dem Anlegen eines Kontos akzeptierst du die Nutzungsbedingungen und die Datenschutzerklärung unter github.com/armaanawesome/read-receipts.',
   'signIn.heading': 'Nimm deine Ermittlungsnotizen mit',
   'signIn.why': 'Ein Konto überträgt deinen Fortschritt auf ein anderes Telefon.',
   'signIn.createAccount': 'Konto erstellen',
@@ -1454,7 +1535,9 @@ const DE: Catalogue = {
     'Ein weiterer Tod, ein weiteres Telefon, eine weitere Geschichte, die nicht standhält. Schalte das Fallpaket frei, um weiterzumachen.',
   'paywall.bullet.case': 'Zwölf weitere Fälle in voller Länge',
   'paywall.bullet.suspects': 'Neue Verdächtige, neue Widersprüche',
-  'paywall.bullet.permanent': 'Dauerhaft deins — kein Abo',
+  'paywall.bullet.permanent': 'Eine Zahlung, kein Abo. Es verlängert sich nicht.',
+  'paywall.licenceNote': 'Du kaufst eine Lizenz, diese Fälle zu spielen, nicht das Eigentum daran. Du kannst sie jederzeit auf einem Gerät mit demselben Store-Konto wiederherstellen.',
+  'paywall.option.perCase': '{price} für jeden der {count}',
   'paywall.empty': 'Der Store hat gerade nichts anzubieten. Versuch es gleich noch einmal.',
   'paywall.unreachable': 'Der Store war nicht erreichbar.',
   'paywall.failed': 'Der Kauf ist nicht durchgegangen. Dir wurde nichts berechnet.',
@@ -1522,6 +1605,14 @@ const PT_BR: Catalogue = {
      the next message, and the button skips the rest of the thread. */
 
   'settings.account.section': 'Conta',
+  'settings.account.delete': 'Excluir conta',
+  'settings.account.deleteDetail': 'Exclui sua conta, seu e-mail e todo o progresso salvo nela. As compras continuam na sua conta da loja e podem ser restauradas.',
+  'settings.account.deleteConfirm': 'Excluir esta conta?',
+  'settings.account.deleteBody': 'Isso não pode ser desfeito. Seu e-mail e todos os casos que você resolveu são apagados do servidor. O progresso que já está neste aparelho continua até você apagá-lo.',
+  'settings.account.deleteKeep': 'Manter minha conta',
+  'settings.account.deleteGo': 'Excluir',
+  'settings.account.deleted': 'Sua conta foi excluída.',
+  'settings.account.deleteFailed': 'Não foi possível excluir a conta. Tente de novo, ou escreva para o endereço na política de privacidade.',
   /* The front door, and the walkthrough that runs inside the demo case rather
      than in front of it. See app/landing.tsx and src/tutorial/steps.ts. */
   'landing.kicker': 'Um caso nas suas mensagens',
@@ -1718,19 +1809,30 @@ const PT_BR: Catalogue = {
   'settings.about.version': 'Versão',
   'settings.about.privacy': 'O que este app guarda',
   'settings.about.licences': 'Licenças de código aberto',
+  'settings.about.support': 'Se um caso mexer com você',
+  'settings.support.body': 'Algumas destas histórias falam de luto, e uma fala de suicídio. Se algo tocar de perto, findahelpline.com reúne serviços gratuitos e sigilosos no seu país.',
 
-  'settings.privacy.progress': 'Seu progresso em cada caso fica guardado neste aparelho.',
+  'settings.privacy.progress': 'Seu progresso fica guardado neste aparelho. Se você entrar na sua conta, ele também é salvo lá para acompanhar você em outro aparelho.',
   'settings.privacy.purchases':
     'As compras são feitas pela App Store ou Google Play através da RevenueCat. Este app nunca vê seus dados de pagamento.',
   'settings.privacy.noTracking':
     'Nesta versão não há anúncios nem SDKs de análise ou rastreamento.',
-  'settings.privacy.deletion': 'Apagar o app apaga seu progresso junto.',
+  'settings.privacy.deletion': 'Apagar o app limpa este aparelho. O progresso salvo numa conta continua até você excluir a conta, o que dá para fazer na tela da conta.',
+  'settings.privacy.account': 'Uma conta guarda seu e-mail e quais casos você abriu, leu e resolveu. Nada além disso.',
+  'settings.privacy.policy': 'Política de privacidade e termos completos: github.com/armaanawesome/read-receipts',
 
   'language.title': 'Idioma',
   'language.footnote':
     'Isto traduz o aplicativo. Os casos são traduzidos separadamente, e qualquer caso ainda não traduzido permanece em inglês.',
 
   'signIn.title': 'Entrar',
+  'signIn.age.title': 'Uma pergunta antes de criar uma conta',
+  'signIn.age.body': 'Uma conta salva seu progresso num servidor, então a lei pergunta a idade primeiro. O jogo funciona sem conta, e aí nada é guardado fora deste aparelho.',
+  'signIn.age.over': 'Tenho 16 anos ou mais',
+  'signIn.age.under': 'Tenho menos de 16 anos',
+  'signIn.age.blocked': 'As contas são para jogadores de 16 anos ou mais. Dá para jogar tudo sem conta, e seu progresso fica salvo neste aparelho.',
+  'signIn.age.backToGame': 'Voltar aos casos',
+  'signIn.terms': 'Criar uma conta significa aceitar os termos e a política de privacidade em github.com/armaanawesome/read-receipts.',
   'signIn.heading': 'Leve suas anotações com você',
   'signIn.why': 'Uma conta leva seu progresso para outro celular.',
   'signIn.createAccount': 'Criar conta',
@@ -1784,7 +1886,9 @@ const PT_BR: Catalogue = {
     'Outra morte, outro celular, outra história que não se sustenta. Desbloqueie o pacote de casos para continuar.',
   'paywall.bullet.case': 'Mais doze casos completos',
   'paywall.bullet.suspects': 'Novos suspeitos, novas contradições',
-  'paywall.bullet.permanent': 'Seu para sempre — não é assinatura',
+  'paywall.bullet.permanent': 'Um pagamento só, não é assinatura. Não renova.',
+  'paywall.licenceNote': 'Você está comprando uma licença para jogar estes casos, não a propriedade deles. Dá para restaurar a qualquer momento num aparelho com a mesma conta da loja.',
+  'paywall.option.perCase': '{price} para cada um dos {count}',
   'paywall.empty': 'A loja não tem nada para vender agora. Tente daqui a pouco.',
   'paywall.unreachable': 'Não foi possível acessar a loja.',
   'paywall.failed': 'A compra não foi concluída. Você não foi cobrado.',

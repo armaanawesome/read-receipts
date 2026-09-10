@@ -19,7 +19,7 @@ import {
   FAILURE_MESSAGE_KEY,
   type PurchaseOptions,
 } from '@/entitlements/offering';
-import { PAID_CASE_COUNT, referencePrice } from '@/entitlements/pricing';
+import { PAID_CASE_COUNT, perCasePrice } from '@/entitlements/pricing';
 
 type Phase =
   | { kind: 'loading' }
@@ -289,6 +289,17 @@ export default function PaywallScreen() {
   }
 
   const twoWays = options.single !== null && options.bundle !== null;
+
+  /*
+   * "$1.00 for each of the 12" -- the unit price, in words, in the player's
+   * language. Null when the store gave a price Intl cannot format, in which
+   * case the card renders its spacer and says nothing rather than guessing.
+   */
+  const bundleUnit = (() => {
+    if (!options.bundle) return null;
+    const each = perCasePrice(options.bundle.product.price, options.bundle.product.currencyCode);
+    return each === null ? null : t('paywall.option.perCase', { price: each, count: PAID_CASE_COUNT });
+  })();
   const selected =
     choice === 'single' ? (options.single ?? options.bundle) : (options.bundle ?? options.single);
   const buyingSingle = selected !== null && selected === options.single;
@@ -359,14 +370,16 @@ export default function PaywallScreen() {
               label={t('paywall.option.bundle', { count: PAID_CASE_COUNT })}
               price={options.bundle.product.priceString}
               /*
-               * The reference figure, struck through, above the real price.
+               * The UNIT price, under the real one. Not a struck-through
+               * reference figure: that notation announces a price reduction,
+               * and this pack has never sold at another price, which makes the
+               * announcement false. See docs/LEGAL-REVIEW.md, Count 5.
                *
-               * NOT a former price — the pack has never sold at another one — so
-               * it stands for what the pack is worth across its cases rather
-               * than implying a markdown. Derived from the store's own currency
-               * code, so a euro price never sits beside a dollar sign.
+               * Derived from what the store will actually charge, so it cannot
+               * drift away from it, and null when the currency or price is
+               * unusable rather than guessed at.
                */
-              was={referencePrice(options.bundle.product.currencyCode)}
+              unit={bundleUnit}
               note={t('paywall.option.bundleNote')}
               bestLabel={twoWays ? t('paywall.option.best') : undefined}
               selected={selected === options.bundle}
@@ -398,6 +411,17 @@ export default function PaywallScreen() {
         </Pressable>
       ) : null}
 
+      {/*
+        California AB 2426: advertising a digital good as bought or owned
+        without disclosing that it is a licence, and that the licence can become
+        unavailable, is unlawful there from 1 January 2025. It has to sit at the
+        point of the transaction, which is here -- not in a settings panel the
+        buyer never opens. See docs/LEGAL-REVIEW.md, Count 6.
+      */}
+      {selected && phase.kind !== 'loading' && phase.kind !== 'unavailable' ? (
+        <Text style={styles.licenceNote}>{t('paywall.licenceNote')}</Text>
+      ) : null}
+
       {unavailableReason ? null : (
         <Pressable
           onPress={restore}
@@ -427,19 +451,19 @@ export default function PaywallScreen() {
 function OptionCard(props: {
   label: string;
   price: string;
-  was?: string;
+  unit?: string | null;
   note: string;
   bestLabel?: string | undefined;
   selected: boolean;
   onPress: () => void;
 }) {
-  const { label, price, was, note, bestLabel, selected, onPress } = props;
+  const { label, price, unit, note, bestLabel, selected, onPress } = props;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="radio"
       accessibilityState={{ selected }}
-      accessibilityLabel={`${label}. ${price}. ${note}`}
+      accessibilityLabel={[label, price, unit, note].filter(Boolean).join('. ')}
       style={({ pressed }) => [
         styles.card,
         selected && styles.cardSelected,
@@ -459,16 +483,20 @@ function OptionCard(props: {
           {label}
         </Text>
       </View>
+      <Text style={styles.cardPrice}>{price}</Text>
       {/*
-        The card without a struck figure still reserves its line.
+        The card without a unit price still reserves its line.
 
         Measured in the harness: without this the two prices sat twenty points
         apart, and so did the two notes under them. Prices are the whole thing
         being compared here, and a comparison whose numbers are not on one
         baseline makes the reader do the aligning.
+
+        Below the price now, not above it. A figure sitting above the real one
+        reads as the price that was crossed out even without the line through
+        it, which is the impression this change exists to remove.
       */}
-      {was ? <Text style={styles.struck}>{was}</Text> : <View style={styles.struckSpacer} />}
-      <Text style={styles.cardPrice}>{price}</Text>
+      {unit ? <Text style={styles.unit}>{unit}</Text> : <View style={styles.unitSpacer} />}
       {note ? (
         <Text style={styles.cardNote} numberOfLines={3}>
           {note}
@@ -574,12 +602,13 @@ const styles = StyleSheet.create({
    * the text's measured width, and would sit wrong the moment a currency symbol
    * changed the string's length.
    */
-  struck: {
+  unit: {
     ...theme.type.meta,
     color: theme.color.textDim,
-    textDecorationLine: 'line-through',
   },
-  struckSpacer: { height: theme.type.meta.lineHeight },
+  unitSpacer: { height: theme.type.meta.lineHeight },
+
+  licenceNote: { ...theme.type.meta, color: theme.color.textDim, textAlign: 'center' },
 
   cta: {
     minHeight: theme.hit.min + 6,

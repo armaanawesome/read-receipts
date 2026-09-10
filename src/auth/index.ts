@@ -38,6 +38,7 @@ export {
   type PasswordRuleId,
   type PasswordStrength,
 } from './passwordStrength';
+export { deleteAccount, type DeleteAccountResult } from './deleteAccount';
 export {
   syncProgress,
   describeSyncResult,

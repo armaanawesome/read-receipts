@@ -25,6 +25,7 @@ import { restoreErrorMessage, restoreIsBusy, restoreStatusLine, type RestoreStat
 import { restorePurchases } from '@/entitlements/revenuecat';
 import { useEntitlements } from '@/entitlements/useEntitlements';
 import { useCaseStore } from '@/state/caseStore';
+import { deleteAccount, useAuth } from '@/auth';
 
 /**
  * Preferences, purchases, and the things a player needs when something has gone
@@ -56,7 +57,9 @@ export default function SettingsScreen() {
   const { unavailableReason, refresh } = useEntitlements();
   const [restore, setRestore] = useState<RestoreState>({ kind: 'idle' });
   const [erased, setErased] = useState<string | null>(null);
-  const [openPanel, setOpenPanel] = useState<'privacy' | 'licences' | null>(null);
+  const [openPanel, setOpenPanel] = useState<'privacy' | 'licences' | 'support' | null>(null);
+  const [accountNotice, setAccountNotice] = useState<string | null>(null);
+  const { status } = useAuth();
 
   // Safe to call from more than one screen; the second caller awaits the first read.
   useEffect(() => {
@@ -128,6 +131,46 @@ export default function SettingsScreen() {
     );
   }, [t]);
 
+  /**
+   * Delete the account, not the device.
+   *
+   * Required by Apple 5.1.1(v) and Google Play's data deletion policy for any
+   * app that lets a player create an account, and by GDPR Art. 17 underneath
+   * both. See docs/LEGAL-REVIEW.md, Count 4.
+   *
+   * Two confirmations rather than one. Erasing progress is recoverable by
+   * replaying; this is not, and it takes the email address with it. The second
+   * alert restates what actually goes, because the first one is the one people
+   * tap through.
+   */
+  const onDeleteAccount = useCallback(() => {
+    Alert.alert(
+      t('settings.account.deleteConfirm'),
+      t('settings.account.deleteBody'),
+      [
+        { text: t('settings.account.deleteKeep'), style: 'cancel' },
+        {
+          text: t('settings.account.deleteGo'),
+          style: 'destructive',
+          onPress: () => {
+            void (async () => {
+              const result = await deleteAccount();
+              if (result.kind === 'deleted') {
+                setAccountNotice(t('settings.account.deleted'));
+                feedback.notify('success');
+                return;
+              }
+              // `skipped` means there was no account to delete, which from this
+              // row is indistinguishable from a failure to the player.
+              setAccountNotice(render(result.reason, t));
+              feedback.notify('warning');
+            })();
+          },
+        },
+      ],
+    );
+  }, [t]);
+
   const restoreStatus = restoreStatusLine(restore);
   // Rendered here, not built as a sentence in src/settings — same reason as the
   // sign-in notice: the words have to come from the catalogue the player is on.
@@ -156,8 +199,24 @@ export default function SettingsScreen() {
             configures - and the player most likely to open Settings looking for
             help is the one who skipped it. */}
         {/* Sign-in had no entrance anywhere in the app until now. */}
-        <Section title={t('settings.account.section')}>
+        <Section
+          title={t('settings.account.section')}
+          footnote={accountNotice ?? undefined}
+        >
           <ActionRow label={t('signIn.title')} onPress={() => router.push('/sign-in')} />
+          {/*
+            Only when there is an account to delete. Offering it to a signed-out
+            player is a button that can only fail, and offering it when accounts
+            are unavailable advertises a system this build does not have.
+          */}
+          {status.kind === 'signedIn' ? (
+            <ActionRow
+              label={t('settings.account.delete')}
+              detail={t('settings.account.deleteDetail')}
+              destructive
+              onPress={onDeleteAccount}
+            />
+          ) : null}
         </Section>
 
         {/*
@@ -281,6 +340,20 @@ export default function SettingsScreen() {
                 <Text style={styles.licenceKind}>{l.licence}</Text>
               </View>
             ))}
+          </ExpandableRow>
+
+          {/*
+            Several cases are built on grief and one on suicide. Nothing here is
+            a crisis service and it does not pretend to be -- it points at a
+            directory that covers every country, because a single national
+            number is wrong for most of the people reading it.
+          */}
+          <ExpandableRow
+            label={t('settings.about.support')}
+            expanded={openPanel === 'support'}
+            onPress={() => setOpenPanel((p) => (p === 'support' ? null : 'support'))}
+          >
+            <Text style={styles.prose}>{t('settings.support.body')}</Text>
           </ExpandableRow>
 
           <ValueRow

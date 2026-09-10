@@ -51,6 +51,23 @@ export default function SignInScreen() {
   const { status, signIn, signUp, signOut } = useAuth();
 
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
+  /**
+   * Age, asked once, at the point the app is about to collect an email address.
+   *
+   * null = not asked yet, true = old enough, false = told us they are not.
+   *
+   * Deliberately NOT persisted. It is a question about a single act -- creating
+   * an account -- and storing the answer would mean storing a fact about a
+   * child's age, which is the thing this gate exists to avoid collecting. Local
+   * state also means the question is asked at the moment of collection, which
+   * is what COPPA, the ICO Children's Code and India's DPDP Act each ask for in
+   * their own words. See docs/LEGAL-REVIEW.md, Count 8.
+   *
+   * A neutral question with two equal buttons, no default and no nudge towards
+   * the older answer -- the Children's Code is explicit that a gate designed to
+   * be clicked past is not a gate.
+   */
+  const [ageOk, setAgeOk] = useState<boolean | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [problem, setProblem] = useState<CredentialProblem | null>(null);
@@ -296,7 +313,52 @@ export default function SignInScreen() {
           </>
         ) : null}
 
-        {status.kind === 'signedOut' ? (
+        {/*
+          The game is not gated. Only the account is. A player who says they are
+          under 16 keeps every case, every save and every purchase -- they lose
+          cross-device sync, which is the only thing the server is for.
+        */}
+        {status.kind === 'signedOut' && mode === 'signUp' && ageOk === null ? (
+          <>
+            <Text style={styles.title}>{t('signIn.age.title')}</Text>
+            <Text style={styles.reason}>{t('signIn.age.body')}</Text>
+
+            <Pressable
+              onPress={() => setAgeOk(true)}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
+            >
+              <Text style={styles.ctaText}>{t('signIn.age.over')}</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setAgeOk(false)}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.quiet, pressed && styles.pressed]}
+            >
+              <Text style={styles.quietText}>{t('signIn.age.under')}</Text>
+            </Pressable>
+
+            {leaveButton}
+          </>
+        ) : null}
+
+        {status.kind === 'signedOut' && mode === 'signUp' && ageOk === false ? (
+          <>
+            <Text style={styles.title}>{t('signIn.createAccount')}</Text>
+            <Text style={styles.reason}>{t('signIn.age.blocked')}</Text>
+
+            <Pressable
+              onPress={() => router.replace('/')}
+              accessibilityRole="button"
+              style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
+            >
+              <Text style={styles.ctaText}>{t('signIn.age.backToGame')}</Text>
+            </Pressable>
+          </>
+        ) : null}
+
+        {status.kind === 'signedOut' && !(mode === 'signUp' && ageOk !== true) ? (
           <>
             <Text style={styles.title}>{t('signIn.heading')}</Text>
             {/* One reason, stated once. Anything more reads as a pitch for
@@ -432,6 +494,16 @@ export default function SignInScreen() {
                     : t('signIn.createAccount')}
               </Text>
             </Pressable>
+
+            {/*
+              GDPR Art. 13 wants the notice at the moment the data is obtained,
+              not only in a settings panel. Shown for sign-up only: an existing
+              account holder already accepted these, and repeating it on every
+              sign-in is noise that trains people to ignore it.
+            */}
+            {mode === 'signUp' ? (
+              <Text style={styles.microcopy}>{t('signIn.terms')}</Text>
+            ) : null}
 
             {leaveButton}
 
