@@ -72,7 +72,7 @@ accuse.
 | Onboarding | ✅ animated landing (sign in / play as guest) → Bakehouse, with the walkthrough running **inside** the case as coach marks. Re-armed from Settings |
 | Case closed | ✅ closed-file header, proof tally, coda, and three exits: next case, all cases, play again |
 
-**Tests:** `.\check.cmd` → **4922 passing across 139 files**, typecheck clean,
+**Tests:** `.\check.cmd` → **4942 passing across 141 files**, typecheck clean,
 coverage 94.3% statements / 91.1% branches on the measured directories. Verified
 by running the suite on 2026-09-04, not copied forward. The files added since the
 last count are `src/audio/beds.test.ts`, `src/ui/claimMarking.test.ts`,
@@ -93,7 +93,7 @@ number has been wrong in this file twice — it said 86 when 15 packs existed, a
 in a document does not fail.
 
 **A green suite is not a playthrough.** It is worth being precise about what the
-4922 actually prove: that no case is unsolvable, no thread is unreachable, no
+4942 actually prove: that no case is unsolvable, no thread is unreachable, no
 contradiction fires that the author did not declare, and no translation drops an
 id. They prove nothing whatever about whether a case is *enjoyable*, whether a
 screen looks right, or whether a purchase completes.
@@ -1388,6 +1388,74 @@ it now drawing the generated bar poster? A poster means the decode really is
 failing and the covers should be downscaled to what the grid actually draws.
 Still blank means the theory is wrong and the cause is somewhere not yet looked
 at. Do not close this out without that observation.
+
+### Device test round 2 — 2026-09-10
+
+Against build `a6dae338` (commit `bf8ab03`). Three findings, all fixed.
+
+**The build lagged everywhere, and that was my error, not the game's.**
+`a6dae338` was cut with `--profile development`. That is the Debug profile:
+dev-mode React with every check live, unoptimised Hermes, no dead-code
+elimination, the dev client attached. §5 of this file already said `preview` is
+the profile for playing and `development` is only for demoing a purchase — it
+was read, and the wrong flag still got typed. No app code was responsible and
+none was changed for it. The rule now lives in the command name instead:
+`npm run build:play` (Release), `npm run build:play:android` (Release APK),
+`npm run build:purchase` (Debug). `6bb7e3f`.
+
+**A Release build cannot open the paid cases, and that is by design.** With a
+Test Store key in a Release binary `keyPolicy.ts` returns `disabled`, the SDK is
+never configured, entitlements come back empty, and twelve of the sixteen cases
+resolve to `blocked` — The Bothy among them. So the two builds genuinely test
+different things and a round that needs both needs both. The home grid still
+draws all sixteen tiles either way, locked ones included, so **the outstanding
+bothy-cover question is answerable on the Release build** without opening the
+case.
+
+- **The tab bar sat on top of the briefing's CTA.** Reported as random across
+  cases, and it was: three screens under the tabs never padded their bottom edge
+  at all, and whether that showed depended on how tall the content was. The
+  briefing had no bottom padding, so a long brief pushed the button under the
+  bar while a short one centred and cleared it by luck — The Bothy has one of
+  the longer briefs. The inbox padded 32pt against a bar of at least 49. The
+  closing screen used the raw `insets.bottom`, the precise reading
+  `tabBarClearance.ts` exists to correct. **Scrolling was never the problem** —
+  all three were already ScrollViews. `tabBarScreens.test.ts` now lists every
+  screen under the tabs, checks each asks for the clearance and none uses the
+  raw inset, and fails the moment a fourth tab route appears. `6a86407`.
+- **The claim menu called a comparison slot "on the record".** Reported in one
+  Bothy group chat; it was never about that chat or that case. Two facts with
+  different lifetimes had been collapsed into one label. *On the record* is
+  permanent — `availableClaims` derives from what has been read, and nothing
+  takes a claim back off. *Pinned* is one of the board's two slots, transient by
+  design: a third pin evicts the oldest and proving a contradiction clears both.
+  The menu drew the permanent label from the transient list, so the blue
+  confirmation vanished after every check. The tick also never said what tapping
+  it would do — picking a pinned claim UNPINS it, so a player holding the message
+  again to confirm was undoing it. `c499c4c`.
+
+**The crosscheck the owner asked for, across all sixteen packs:** 168
+claim-bearing messages, 171 claims, only three messages carry more than one
+(`the-night-ferry` ×1, `the-reunion` ×2), and no case repeats a claim id. There
+is nothing in the data specific to The Bothy. Two ids do collide *across* packs
+— `c-papers-kept` and `c-papers-sent` appear in both `the-lighthouse` and
+`the-listener` — which is inert, because one script is loaded at a time and
+`allClaims` is per-script. Recorded rather than renamed: renaming committed
+content ids to fix nothing a player can reach is not worth the risk this close
+to the deadline.
+
+**A guard was one character too narrow.** `hardcodedText.test.ts` matched
+`[A-Z][a-z]+ [a-z]` inside a `<Text>`, so it only ever caught English sentences
+that began with a capital. The string that shipped was `on the record`. Widened
+to `[A-Za-z]`, verified to catch the exact line that got through, and the suite
+stays green — so it was not producing false positives either.
+
+**Still owed from round 1:** whether the bothy tile draws blank or draws the
+generated poster. Note that the round-1 observation was made on a *Debug* build,
+which holds materially more memory live than Release — so the decode-pressure
+theory should be re-tested on `preview` before any of the sixteen covers is
+re-encoded. Do not downscale committed art on the strength of a Debug-build
+observation.
 
 ### Already established, do not redo
 
