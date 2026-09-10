@@ -63,6 +63,14 @@ one. Check whether the locale actually has the problem first.
 Scope commits to explicit paths. `git add -A` sweeps a running agent's
 half-written files into your commit; it has happened.
 
+**Push when you commit.** Since 2026-09-10 two people work on this repo, and
+GitHub is the only view either of them has of the other's work. A commit
+sitting unpushed is invisible, and two people building on different baselines
+is where the merge pain starts. `git push origin master` belongs in the same
+turn as the commit, not at the end of a session. Docs and comments go up with
+the code they describe — write both for somebody who was not in the
+conversation.
+
 ## 4. Goal-driven execution
 
 **Define success criteria. Loop until verified.**
