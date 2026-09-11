@@ -1,10 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack, Link } from 'expo-router';
-import { Pressable, AppState } from 'react-native';
+import { Pressable, AppState, Alert } from 'react-native';
+import * as Linking from 'expo-linking';
 import { useTranslator } from '@/i18n/useTranslator';
+import { render } from '@/i18n/message';
 import { hydrateSettings } from '@/settings/persistence';
 import { SettingsGlyph } from '@/settings/SettingsList';
-import { syncProgress, useAuth } from '@/auth';
+import { syncProgress, useAuth, completeOAuthRedirect } from '@/auth';
 import { useRevenueCatIdentity } from '@/entitlements/useRevenueCatIdentity';
 import { stopBed } from '@/audio';
 import { StatusBar } from 'expo-status-bar';
@@ -65,6 +67,15 @@ const blankTitleOptions = { title: '' } as const;
  * simply push them straight back here.
  */
 const landingOptions = { headerShown: false, gestureEnabled: false } as const;
+
+/*
+ * Same as the landing: no header and no back gesture.
+ *
+ * Setup is the first screen on a first launch, so there is nothing behind it to
+ * swipe back to -- and a header would draw a back button that either does
+ * nothing or drops the player onto a home grid they have not set up yet.
+ */
+const setupOptions = { headerShown: false, gestureEnabled: false } as const;
 
 /**
  * The only way into Settings, and for a while there was none at all.
@@ -156,6 +167,9 @@ export default function RootLayout() {
     void hydrateSettings();
   }, []);
 
+  /** For the OAuth result alerts below. Read through a ref, see the note there. */
+  const t = useTranslator();
+
   /**
    * Back up progress when the app goes away.
    *
@@ -171,6 +185,90 @@ export default function RootLayout() {
    * the last instant before the OS is entitled to kill the process. Sync is a
    * no-op when nobody is signed in, so this stays free for guests.
    */
+  /**
+   * The other half of Google and Apple sign-in.
+   *
+   * `signInWithProvider` opens the system browser and returns immediately --
+   * the actual result comes back as a deep link to
+   * `privatetexts://auth/callback?code=...`, which wakes the app here. This is
+   * the only place that listens, because a listener per screen would race to
+   * spend a single-use code and the loser would report a failure that did not
+   * happen.
+   *
+   * Two sources, and both are needed. `addEventListener` catches the link when
+   * the app is already running, which is the normal case: the browser opened
+   * over a live app. `getInitialURL` catches the link that started a cold
+   * process, which is what happens when the OS killed the app while the player
+   * was busy authenticating.
+   *
+   * `completeOAuthRedirect` returns null for any link that is not an OAuth
+   * callback, so every other deep link -- `?open=<case>`, password recovery --
+   * falls through untouched to whoever else handles it.
+   */
+  /*
+   * Read through a ref so the effect below can stay `[]`.
+   *
+   * Putting `t` in the dependency array would re-register the listener on every
+   * language change, and re-running the effect calls `getInitialURL()` again --
+   * which would hand the same callback URL back for a second exchange. The code
+   * in it is single-use, so the second attempt fails and the player is told
+   * their sign-in broke immediately after it worked.
+   */
+  const translate = useRef(t);
+  translate.current = t;
+
+  /** Callback URLs already spent. The same guard, for the same single-use code. */
+  const handledUrls = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const handle = (url: string | null) => {
+      if (url === null || cancelled) return;
+      if (handledUrls.current.has(url)) return;
+      handledUrls.current.add(url);
+
+      void (async () => {
+        const result = await completeOAuthRedirect(url);
+        // null means this was not an OAuth callback at all -- `?open=<case>`,
+        // password recovery, anything else. Not ours, say nothing.
+        if (result === null || cancelled) return;
+
+        if (result.kind === 'signedIn') {
+          // A successful exchange fires onAuthStateChange, which useAuth is
+          // already listening to, so the signed-in UI appears on its own.
+          // Progress is pulled down here because signing in is exactly when
+          // another device's saves become relevant -- the same call the
+          // sign-in screen makes.
+          void syncProgress();
+          Alert.alert('', translate.current('auth.provider.signedIn'));
+          return;
+        }
+
+        /*
+         * Cancelled and failed both get said out loud, and that is the point of
+         * handling them at all. The player has just come back from a browser
+         * into an app that looks exactly as they left it; silence there is
+         * indistinguishable from a button that does nothing.
+         */
+        Alert.alert(
+          '',
+          result.kind === 'cancelled'
+            ? translate.current('auth.provider.cancelled')
+            : render(result.reason, translate.current),
+        );
+      })();
+    };
+
+    const sub = Linking.addEventListener('url', ({ url }) => handle(url));
+    void Linking.getInitialURL().then(handle);
+
+    return () => {
+      cancelled = true;
+      sub.remove();
+    };
+  }, []);
+
   useEffect(() => {
     const sub = AppState.addEventListener('change', (next) => {
       if (next === 'background' || next === 'inactive') {
@@ -191,6 +289,7 @@ export default function RootLayout() {
         {/* Presentation belongs to the navigator, not to the screen component. */}
         <Stack.Screen name="index" options={indexOptions} />
         <Stack.Screen name="landing" options={landingOptions} />
+        <Stack.Screen name="setup" options={setupOptions} />
         <Stack.Screen name="paywall" options={paywallOptions} />
         <Stack.Screen name="debug" options={debugOptions} />
         <Stack.Screen name="reset-password" options={resetOptions} />

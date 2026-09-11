@@ -16,6 +16,7 @@ import { DEMO_CASE_ID } from '@content/cases';
 import { theme } from '@/ui/theme';
 import { useTranslator } from '@/i18n/useTranslator';
 import { render, type Message } from '@/i18n/message';
+import { AuthProviderButtons, AuthProviderDivider } from '@/ui/AuthProviderButtons';
 import { EyeGlyph } from '@/ui/EyeGlyph';
 import type { Translator } from '@/i18n/translate';
 import {
@@ -365,6 +366,18 @@ export default function SignInScreen() {
                 something the player does not need in order to play. */}
             <Text style={styles.reason}>{t('signIn.why')}</Text>
 
+            {/*
+              Above the form, not below it.
+
+              Two taps and no password beats an email address plus a password
+              rule on a phone keyboard, so the cheaper route goes first. The
+              existing `notice` state is reused rather than adding a second one:
+              there is one notice area on this screen and two things that can
+              fill it, which is exactly what one piece of state is for.
+            */}
+            <AuthProviderButtons onResult={setNotice} style={styles.providers} />
+            <AuthProviderDivider />
+
             <View style={styles.toggle} accessibilityRole="tablist">
               {(['signIn', 'signUp'] as const).map((option) => {
                 const selected = mode === option;
@@ -650,6 +663,7 @@ const styles = StyleSheet.create({
   title: { ...theme.type.title, color: theme.color.text },
   reason: { ...theme.type.body, color: theme.color.textDim, marginBottom: theme.space.sm },
 
+  providers: { marginBottom: theme.space.sm },
   toggle: {
     flexDirection: 'row',
     backgroundColor: theme.color.surface,

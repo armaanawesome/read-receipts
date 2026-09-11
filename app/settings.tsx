@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert, Platform, Linking } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
@@ -20,7 +20,7 @@ import {
   ToggleRow,
   ValueRow,
 } from '@/settings/SettingsList';
-import { LICENCES, PRIVACY_POINTS, versionLine } from '@/settings/about';
+import { LICENCES, PRIVACY_POINTS, PRIVACY_URL, TERMS_URL, versionLine } from '@/settings/about';
 import { restoreErrorMessage, restoreIsBusy, restoreStatusLine, type RestoreState } from '@/settings/restore';
 import { restorePurchases } from '@/entitlements/revenuecat';
 import { useEntitlements } from '@/entitlements/useEntitlements';
@@ -59,6 +59,7 @@ export default function SettingsScreen() {
   const [erased, setErased] = useState<string | null>(null);
   const [openPanel, setOpenPanel] = useState<'privacy' | 'licences' | 'support' | null>(null);
   const [accountNotice, setAccountNotice] = useState<string | null>(null);
+  const [legalNotice, setLegalNotice] = useState<string | null>(null);
   const { status } = useAuth();
 
   // Safe to call from more than one screen; the second caller awaits the first read.
@@ -170,6 +171,27 @@ export default function SettingsScreen() {
       ],
     );
   }, [t]);
+
+  /**
+   * Open a legal document in the player's own browser.
+   *
+   * Not an in-app webview. A policy is a document somebody may want to keep,
+   * search, or send to someone else, and the browser does all three; a webview
+   * does none of them and adds a chrome-less page that looks like part of the
+   * app while being a remote document.
+   *
+   * The failure path says where else to find it rather than just "failed" --
+   * on a device with no browser handler the link is genuinely unreachable, and
+   * the repository is a real second route.
+   */
+  const openLegal = useCallback(
+    (url: string) => {
+      setLegalNotice(null);
+      feedback.selection();
+      void Linking.openURL(url).catch(() => setLegalNotice(t('settings.legal.failed')));
+    },
+    [t],
+  );
 
   const restoreStatus = restoreStatusLine(restore);
   // Rendered here, not built as a sentence in src/settings — same reason as the
@@ -313,6 +335,27 @@ export default function SettingsScreen() {
             detail={t('settings.reset.detail')}
             destructive
             onPress={onReset}
+          />
+        </Section>
+
+        {/*
+          Its own section, above About rather than inside it.
+
+          Both stores require a reachable privacy policy and the EU requires
+          terms before a consumer is bound, but the reason these are a top-level
+          section is that a player looking for them is looking for "legal", not
+          for "about this app". See docs/LEGAL-REVIEW.md, Counts 3 and 7.
+        */}
+        <Section title={t('settings.legal.section')} footnote={legalNotice ?? undefined}>
+          <ActionRow
+            label={t('settings.legal.privacy')}
+            detail={t('settings.legal.detail')}
+            onPress={() => openLegal(PRIVACY_URL)}
+          />
+          <ActionRow
+            label={t('settings.legal.terms')}
+            detail={t('settings.legal.detail')}
+            onPress={() => openLegal(TERMS_URL)}
           />
         </Section>
 

@@ -25,6 +25,7 @@ describe('parseSettings', () => {
       // trip rather than merely agreeing with what the defaults would have been.
       hasSeenLanding: true,
       tutorialDismissed: true,
+      hasChosenSetup: true,
     };
     expect(parseSettings(stored)).toEqual(stored);
   });
@@ -54,6 +55,9 @@ describe('parseSettings', () => {
     const parsed = parseSettings(olderBuild);
     expect(parsed.hasSeenLanding).toBe(false);
     expect(parsed.tutorialDismissed).toBe(false);
+    // Same direction, same reason: a blob written before the setup screen
+    // existed has not been through it, so the screen shows once.
+    expect(parsed.hasChosenSetup).toBe(false);
     expect(parsed).not.toHaveProperty('hasSeenHowToPlay');
   });
 

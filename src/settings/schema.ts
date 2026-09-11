@@ -45,6 +45,21 @@ export interface Settings {
    * re-arms the real thing instead.
    */
   readonly tutorialDismissed: boolean;
+  /**
+   * Whether this person has been through the first-run setup screen -- the one
+   * that asks for language, sound, vibration and reduce-motion.
+   *
+   * Separate from `hasSeenLanding` because it is asked EARLIER and answers a
+   * different question. The order is deliberate: setup runs before the landing
+   * screen so the pitch arrives in the player's own language rather than in
+   * English with a language picker buried two screens away.
+   *
+   * Defaults to false, so everyone who already has the app sees the screen once
+   * on their next launch. That is the right direction to err: the alternative
+   * silently denies the choice to every existing player, and the screen costs
+   * four taps at worst.
+   */
+  readonly hasChosenSetup: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -55,6 +70,7 @@ export const DEFAULT_SETTINGS: Settings = {
   localeTag: DEFAULT_LOCALE,
   hasSeenLanding: false,
   tutorialDismissed: false,
+  hasChosenSetup: false,
 };
 
 /**
@@ -96,6 +112,7 @@ const settingsBlob = z.object({
    */
   hasSeenLanding: z.boolean().catch(DEFAULT_SETTINGS.hasSeenLanding),
   tutorialDismissed: z.boolean().catch(DEFAULT_SETTINGS.tutorialDismissed),
+  hasChosenSetup: z.boolean().catch(DEFAULT_SETTINGS.hasChosenSetup),
 });
 
 /** Never throws. Anything unrecognisable becomes the defaults. */
@@ -132,6 +149,7 @@ export function settingsEqual(a: Settings, b: Settings): boolean {
     a.reduceMotion === b.reduceMotion &&
     a.localeTag === b.localeTag &&
     a.hasSeenLanding === b.hasSeenLanding &&
-    a.tutorialDismissed === b.tutorialDismissed
+    a.tutorialDismissed === b.tutorialDismissed &&
+    a.hasChosenSetup === b.hasChosenSetup
   );
 }

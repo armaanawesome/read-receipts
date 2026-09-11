@@ -56,6 +56,23 @@ export const PRIVACY_POINTS: readonly StringKey[] = [
   'settings.privacy.policy',
 ];
 
+/**
+ * Where the legal documents actually live.
+ *
+ * GitHub rather than a marketing site, because there is no marketing site and a
+ * settings row that opens a 404 is worse than no row. These URLs are public,
+ * permanent, and render the Markdown properly on a phone. Google Play accepts a
+ * link of this shape as the privacy policy URL, which is the requirement that
+ * made them load-bearing rather than a nicety.
+ *
+ * Kept here, beside PRIVACY_POINTS, so the panel that summarises the policy and
+ * the row that opens it cannot end up pointing at different things. If a real
+ * domain ever exists, this is the one place to change.
+ */
+const REPO = 'https://github.com/armaanawesome/read-receipts/blob/master';
+export const PRIVACY_URL = `${REPO}/PRIVACY.md`;
+export const TERMS_URL = `${REPO}/TERMS.md`;
+
 export interface Licence {
   readonly name: string;
   readonly licence: string;

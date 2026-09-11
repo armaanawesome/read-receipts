@@ -40,6 +40,14 @@ export {
 } from './passwordStrength';
 export { deleteAccount, type DeleteAccountResult } from './deleteAccount';
 export {
+  signInWithProvider,
+  completeOAuthRedirect,
+  oauthRedirectUrl,
+  type OAuthProvider,
+  type OAuthStart,
+  type OAuthFinish,
+} from './oauth';
+export {
   syncProgress,
   describeSyncResult,
   PROGRESS_TABLE,

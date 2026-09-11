@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useCallback, useState } from 'react';
+import { View, Text, StyleSheet, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,6 +9,10 @@ import { useReduceMotion } from '@/settings/useReduceMotion';
 import { useSettingsStore } from '@/settings/settingsStore';
 import { TypingIndicator } from '@/ui/TypingIndicator';
 import { DEMO_CASE_ID } from '@content/cases';
+import { AuthProviderButtons } from '@/ui/AuthProviderButtons';
+import { PRIVACY_URL, TERMS_URL } from '@/settings/about';
+import { render } from '@/i18n/message';
+import type { Message } from '@/i18n/message';
 
 /**
  * Android gets a ripple as well as the opacity change.
@@ -57,6 +61,8 @@ export default function LandingScreen() {
   const insets = useSafeAreaInsets();
   const reduceMotion = useReduceMotion();
   const update = useSettingsStore((s) => s.update);
+  /** Whatever the provider buttons have to report. Null most of the time. */
+  const [notice, setNotice] = useState<Message | null>(null);
 
   /**
    * Marks the door used, then goes.
@@ -139,21 +145,65 @@ export default function LandingScreen() {
         </Pressable>
 
         {/*
-          Guest is the loud button and signing in is the quiet one, which is the
-          opposite of the usual arrangement and is deliberate. The player came to
-          play; an account is how they keep it afterwards. Leading with the form
-          would charge an email address for a game they have not seen yet.
+          Guest is the loud button and every account route below it is quieter,
+          which is the opposite of the usual arrangement and is deliberate. The
+          player came to play; an account is how they keep it afterwards.
+          Leading with a sign-in form would charge an email address for a game
+          they have not seen yet.
+
+          Apple and Google sit between the two because they are the cheapest way
+          to say yes -- two taps, no password, no typing on a phone. The email
+          route stays available and is now a text link rather than a third
+          outlined button: three identical buttons in a column read as a list of
+          equals, and these three are not equals.
         */}
+        <AuthProviderButtons onResult={setNotice} />
+
+        {notice ? (
+          <Text style={styles.notice} accessibilityLiveRegion="polite">
+            {render(notice, t)}
+          </Text>
+        ) : null}
+
         <Pressable
           onPress={() => leave('sign-in')}
           accessibilityRole="button"
           android_ripple={RIPPLE_ON_DARK}
-          style={({ pressed }) => [styles.secondary, pressed && styles.pressed]}
+          hitSlop={theme.hit.slop}
+          style={({ pressed }) => [styles.emailRoute, pressed && styles.pressed]}
         >
-          <Text style={styles.secondaryText}>{t('landing.signIn')}</Text>
+          <Text style={styles.emailRouteText}>{t('landing.signIn')}</Text>
         </Pressable>
 
         <Text style={styles.note}>{t('landing.syncNote')}</Text>
+
+        {/*
+          The legal footer.
+
+          Apple and Google both require a reachable privacy policy, and the EU
+          requires terms before a consumer is bound -- but the reason it is on
+          the FRONT screen rather than only in Settings is simpler than
+          compliance: this is the screen where somebody decides whether to hand
+          over an email address, so it is the screen where the terms of doing so
+          should be one tap away. See docs/LEGAL-REVIEW.md, Counts 3 and 7.
+        */}
+        <View style={styles.legal}>
+          <Pressable
+            onPress={() => void Linking.openURL(PRIVACY_URL).catch(() => undefined)}
+            accessibilityRole="link"
+            hitSlop={theme.hit.slop}
+          >
+            <Text style={styles.legalText}>{t('landing.privacy')}</Text>
+          </Pressable>
+          <Text style={styles.legalDot}>·</Text>
+          <Pressable
+            onPress={() => void Linking.openURL(TERMS_URL).catch(() => undefined)}
+            accessibilityRole="link"
+            hitSlop={theme.hit.slop}
+          >
+            <Text style={styles.legalText}>{t('landing.terms')}</Text>
+          </Pressable>
+        </View>
       </Animated.View>
     </View>
   );
@@ -193,15 +243,15 @@ const styles = StyleSheet.create({
     backgroundColor: theme.color.accent,
   },
   primaryText: { ...theme.type.body, color: theme.color.bg, fontWeight: '600' },
-  secondary: {
-    minHeight: theme.hit.min,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: theme.radius.chip,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: theme.color.rule,
-  },
-  secondaryText: { ...theme.type.body, color: theme.color.text },
+  /** A text link, not a button. See the comment beside it for why. */
+  emailRoute: { minHeight: theme.hit.min, alignItems: 'center', justifyContent: 'center' },
+  emailRouteText: { ...theme.type.body, color: theme.color.text, textDecorationLine: 'underline' },
+
+  notice: { ...theme.type.meta, color: theme.color.textDim, textAlign: 'center', lineHeight: 17 },
+
+  legal: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: theme.space.sm },
+  legalText: { ...theme.type.meta, color: theme.color.textDim, textDecorationLine: 'underline' },
+  legalDot: { ...theme.type.meta, color: theme.color.textDim },
   note: { ...theme.type.meta, color: theme.color.textDim, textAlign: 'center', lineHeight: 17 },
   pressed: { opacity: 0.7 },
 });

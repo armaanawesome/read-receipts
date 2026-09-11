@@ -46,6 +46,7 @@ export default function CaseSelectScreen() {
   const router = useRouter();
   const localeTag = useSettingsStore((s) => s.settings.localeTag);
   const hasSeenLanding = useSettingsStore((s) => s.settings.hasSeenLanding);
+  const hasChosenSetup = useSettingsStore((s) => s.settings.hasChosenSetup);
   const settingsHydrated = useSettingsStore((s) => s.hydrated);
   const {
     entitlementIds,
@@ -140,7 +141,32 @@ export default function CaseSelectScreen() {
   const rootState = useRootNavigationState();
   const navReady = rootState?.key !== undefined;
 
-  const landingPending = settingsHydrated && !hasSeenLanding;
+  /**
+   * Setup comes before the landing, and the order is the point.
+   *
+   * The landing screen is the pitch — three bubbles of case text — and it is
+   * translated. Showing it before asking which language the player reads means
+   * pitching in English to somebody who cannot read it, with the picker two
+   * screens further in. So: setup, then landing.
+   *
+   * Both gates wait on `settingsHydrated` for the same reason. Preferences start
+   * at their defaults and are replaced wholesale once storage has been read, and
+   * both flags default to `false` — navigating before the read lands would show
+   * both screens to a returning player on every launch.
+   */
+  const setupPending = settingsHydrated && !hasChosenSetup;
+  useEffect(() => {
+    if (navReady && setupPending) router.push('/setup');
+  }, [navReady, setupPending, router]);
+
+  /*
+   * `hasChosenSetup` is in this condition, not just in the one above it.
+   * Without it both effects fire on the same render on a first launch, and the
+   * landing lands on top of the setup screen the player has not answered yet.
+   * Setup returns with `router.back()`, which re-renders this screen with the
+   * flag set — and that is the render that pushes the landing.
+   */
+  const landingPending = settingsHydrated && hasChosenSetup && !hasSeenLanding;
   useEffect(() => {
     if (navReady && landingPending) router.push('/landing');
   }, [navReady, landingPending, router]);
@@ -174,10 +200,12 @@ export default function CaseSelectScreen() {
   }, [navReady, open, router]);
 
 
-  // Blank for the frame between the effect firing and the landing arriving. The
-  // grid drawn underneath is a screen this player has not earned the right to
-  // see yet, and a flash of it is how the last build opened.
-  if (landingPending) return <View style={styles.root} />;
+  // Blank for the frame between the effect firing and the next screen arriving.
+  // The grid drawn underneath is a screen this player has not earned the right
+  // to see yet, and a flash of it is how the last build opened. `setupPending`
+  // is here for the same reason the landing is: the setup screen is pushed from
+  // an effect, so there is a frame before it covers this one.
+  if (setupPending || landingPending) return <View style={styles.root} />;
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>

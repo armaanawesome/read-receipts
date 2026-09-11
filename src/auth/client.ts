@@ -97,6 +97,20 @@ export function getSupabase(): SupabaseHandle {
         // There is no browser redirect in a native app, and leaving this on
         // makes supabase-js read window.location, which Hermes does not have.
         detectSessionInUrl: false,
+        /*
+         * Required by the Google/Apple sign-in in src/auth/oauth.ts.
+         *
+         * The default implicit flow returns the access and refresh tokens in
+         * the URL *fragment* of the redirect, which on a phone means real
+         * credentials travelling through the OS link handler and into logs.
+         * PKCE sends a single-use code instead and keeps the verifier on the
+         * device, where the same AsyncStorage adapter above holds it.
+         *
+         * Safe for the password reset flow: that one verifies a six-digit OTP
+         * token (`verifyRecoveryCode` in useAuth.ts), not a magic link, and OTP
+         * verification does not depend on the flow type.
+         */
+        flowType: 'pkce',
       },
     }),
   };
