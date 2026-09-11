@@ -72,11 +72,13 @@ accuse.
 | Onboarding | ✅ animated landing (sign in / play as guest) → Bakehouse, with the walkthrough running **inside** the case as coach marks. Re-armed from Settings |
 | Case closed | ✅ closed-file header, proof tally, coda, and three exits: next case, all cases, play again |
 
-**Tests:** `.\check.cmd` → **4935 passing across 140 files**, typecheck clean,
+**Tests:** `.\check.cmd` → **4940 passing across 140 files**, typecheck clean,
 coverage 94.8% statements / 91.9% branches on the measured directories. Verified
-by running the suite on 2026-09-10, not copied forward. The count went DOWN
-because `claimMenuCraft.test.ts` was deleted with the change it guarded — see
-the 2026-09-10 revert below. The files added since the
+by running the suite on 2026-09-10, not copied forward. Five were added by the
+legal sweep: four in `about.test.ts` guarding the privacy panel against
+`sync.ts`, and a net one from rewriting `pricing.test.ts`. Before that the count
+went DOWN to 4935 because `claimMenuCraft.test.ts` was deleted with the change
+it guarded — see the 2026-09-10 revert below. The files added since the
 last count are `src/audio/beds.test.ts`, `src/ui/claimMarking.test.ts`,
 `src/ui/chatWallpaper.test.ts`, `src/entitlements/pricing.test.ts` and
 `src/entitlements/offering.test.ts`. Most of the growth is
@@ -95,7 +97,7 @@ number has been wrong in this file twice — it said 86 when 15 packs existed, a
 in a document does not fail.
 
 **A green suite is not a playthrough.** It is worth being precise about what the
-4935 actually prove: that no case is unsolvable, no thread is unreachable, no
+4940 actually prove: that no case is unsolvable, no thread is unreachable, no
 contradiction fires that the author did not declare, and no translation drops an
 id. They prove nothing whatever about whether a case is *enjoyable*, whether a
 screen looks right, or whether a purchase completes.
@@ -1519,11 +1521,78 @@ than where they rot:
   checkout produces a confident plan for code that no longer exists.
 
 The README's numbers were all from August and were corrected in the same pass:
-15 cases (16), 769 messages (795), 34 test files and 595 tests (140 and 4935),
+15 cases (16), 769 messages (795), 34 test files and 595 tests (140 and 4940),
 93.8/90.2 coverage (94.8/91.9), and the entitlement named `case_pack_1` when
 the dashboard has read `all_cases` since the pack was re-created. `ids.ts` had
 a docstring asserting `case_pack_1` directly above
 `export const CASE_PACK_ENTITLEMENT = 'all_cases'`.
+
+### The legal sweep — 2026-09-10
+
+`docs/LEGAL-REVIEW.md` is an adversarial audit of the whole app: sixteen counts,
+written as the brief opposing counsel would file. Read it before touching
+licensing, the paywall, the privacy panel or anything that collects data. **Do
+not redo the review.** Fourteen counts are fixed in the repo; two need a human.
+
+**The five that would have stopped a launch.**
+
+1. **`LICENSE` was MIT over a public repo containing all sixteen case packs.**
+   Anyone could lawfully clone, rename and sell the game, and the twelve paid
+   cases were readable for free on GitHub. Split now: code MIT, content
+   proprietary in `CONTENT-LICENSE`. **The part that cannot be undone is
+   recorded there** — a copy taken before 2026-09-10 keeps its MIT grant, and
+   there is no mechanism to recall it.
+
+2. **The privacy panel was false in five languages.** It said progress "is
+   stored on this device" and that deleting the app deletes it. Neither survived
+   `sync.ts` landing. `about.ts` carried a comment *predicting* this exact
+   failure and the comment did not stop it, so `about.test.ts` now fails if
+   `sync.ts` upserts and the panel does not mention an account.
+
+3. **No privacy policy and no account deletion.** Either one is a straight
+   App Store rejection (5.1.1(i) and 5.1.1(v)). `PRIVACY.md` plus a
+   `delete-account` Edge Function and a settings row. **The function takes the
+   user id from the verified JWT and never from the request body** — the other
+   way round is an account-takeover primitive shipped as a privacy feature.
+
+4. **The struck-through price was never charged.** `pricing.ts` admitted it in
+   its own docstring. A strike-through announces a price reduction, which makes
+   it misleading under the Omnibus Directive, the DMCC Act and the FTC pricing
+   guides. Replaced with a real per-case unit price derived from the store's
+   own figure. **Do not put a comparison price back.**
+
+5. **"Yours permanently" claimed ownership of a licence.** California AB 2426
+   wants the licence disclosure at the point of the transaction; it now sits
+   under the buy button.
+
+**Also fixed:** an age question before account creation only, neutral and
+unstored (the game stays open to everyone); `UIBackgroundModes` removed, which
+was a 2.5.4 rejection waiting to happen; `CONTRIBUTING.md` with a DCO, because
+the collaborator otherwise owns what he writes; `SECURITY.md`,
+`docs/DATA-PROCESSING.md`, `docs/STORE-COMPLIANCE.md`,
+`THIRD-PARTY-NOTICES.md` (generated, not typed) and
+`assets/ASSET-LICENCES.md`.
+
+**One finding was corrected downward, and it matters.** Count 9 first claimed
+chain of title could not be proven for any asset. Wrong about the audio: all 22
+`.wav` files are synthesised by `tools/make-audio.mjs`, whose opening comment
+says it was done that way *precisely* so every asset would be clearly licensed.
+Delete `assets/audio/` and re-run it; the files come back. The real gap was that
+nothing recorded this, plus the 16 covers having no per-file note of which tool
+made them.
+
+**Two things only a human can close**, both in the review's last section:
+
+- **Count 11 — the trader address.** Germany's section 5 DDG and the EU CRD
+  require a physical address, and Apple *publishes the trader address on the
+  public listing*. For a solo student that means a home address unless a service
+  address is arranged. **Nothing ships in the EU until this is decided.**
+  `PRIVACY.md` and `TERMS.md` carry `[FILL IN]` markers, as does the contact
+  email and the governing law.
+- **Count 16 — name clearance** before any branding spend.
+
+The review also recommends forming a limited company. Every liability count
+lands on Armaan personally while he trades as an individual.
 
 ### Already established, do not redo
 
