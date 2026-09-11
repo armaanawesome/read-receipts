@@ -119,6 +119,33 @@ questioned, that is the evidence.
 | 1.1.1 — objectionable content | Fiction, rated honestly, with a support-resources note in Settings |
 | 2.3.3 — screenshots must show the real app | **Not yet done.** Screenshots are outstanding. Do not stage anything the app does not do |
 
+## 8a. Third-party sign-in
+
+The app offers Continue with Google and Continue with Apple
+(`src/ui/AuthProviderButtons.tsx`). Two store requirements follow from that, and
+neither is satisfied yet.
+
+**Apple, Guideline 4.8 -- Sign in with Apple.** Required wherever a third-party
+sign-in is offered. The app offers it, so this is met in principle. It is only
+genuinely met once Apple is enabled in the Supabase dashboard, which needs a
+paid Apple Developer account.
+
+**Brand assets -- NOT done, deliberately.** Google requires their "G" mark on a
+white or blue field with approved wording; Apple requires their mark and one of
+their approved strings. This project ships no SVG library and no brand assets,
+so the buttons use the app's own type and colours instead. That is the right
+call for now -- a hand-drawn approximation is a trademark problem *and* looks
+wrong beside the real thing -- but it is not submittable.
+
+Before submission: fetch the official assets from Google Identity's branding
+guidelines and Apple's Sign in with Apple resources, and replace the labels.
+The component is deliberately one file with a `PROVIDERS` array so this is a
+contained change.
+
+**Apple's order rule.** Sign in with Apple must be presented no less
+prominently than other options. `PROVIDERS` is ordered Apple first for exactly
+this reason; keep it that way.
+
 ## 9. Before submitting
 
 - [ ] Contact email and postal address filled into `PRIVACY.md` and `TERMS.md`
@@ -130,3 +157,5 @@ questioned, that is the evidence.
 - [ ] Account deletion URL entered in Play Console
 - [ ] DSA trader address decided (EU only)
 - [ ] Screenshots taken from the real app
+- [ ] Google and Apple providers enabled in Supabase, redirect URL allow-listed
+- [ ] Official Google and Apple button artwork in place (section 8a)

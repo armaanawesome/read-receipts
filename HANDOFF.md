@@ -72,7 +72,7 @@ accuse.
 | Onboarding | ✅ animated landing (sign in / play as guest) → Bakehouse, with the walkthrough running **inside** the case as coach marks. Re-armed from Settings |
 | Case closed | ✅ closed-file header, proof tally, coda, and three exits: next case, all cases, play again |
 
-**Tests:** `.\check.cmd` → **4940 passing across 140 files**, typecheck clean,
+**Tests:** `.\check.cmd` → **4941 passing across 140 files**, typecheck clean,
 coverage 94.8% statements / 91.9% branches on the measured directories. Verified
 by running the suite on 2026-09-10, not copied forward. Five were added by the
 legal sweep: four in `about.test.ts` guarding the privacy panel against
@@ -97,7 +97,7 @@ number has been wrong in this file twice — it said 86 when 15 packs existed, a
 in a document does not fail.
 
 **A green suite is not a playthrough.** It is worth being precise about what the
-4940 actually prove: that no case is unsolvable, no thread is unreachable, no
+4941 actually prove: that no case is unsolvable, no thread is unreachable, no
 contradiction fires that the author did not declare, and no translation drops an
 id. They prove nothing whatever about whether a case is *enjoyable*, whether a
 screen looks right, or whether a purchase completes.
@@ -1521,7 +1521,7 @@ than where they rot:
   checkout produces a confident plan for code that no longer exists.
 
 The README's numbers were all from August and were corrected in the same pass:
-15 cases (16), 769 messages (795), 34 test files and 595 tests (140 and 4940),
+15 cases (16), 769 messages (795), 34 test files and 595 tests (140 and 4941),
 93.8/90.2 coverage (94.8/91.9), and the entitlement named `case_pack_1` when
 the dashboard has read `all_cases` since the pack was re-created. `ids.ts` had
 a docstring asserting `case_pack_1` directly above
@@ -1593,6 +1593,63 @@ made them.
 
 The review also recommends forming a limited company. Every liability count
 lands on Armaan personally while he trades as an individual.
+
+### Setup screen, Google/Apple sign-in, legal in reach — 2026-09-11
+
+Three changes for the demo recording. None of them is verified on a handset.
+
+**A first-run setup screen (`app/setup.tsx`).** Language, sound, vibration,
+reduce-motion, asked once. It runs BEFORE the landing, gated on a new
+`hasChosenSetup` flag in `src/settings/schema.ts`, and the order is the point:
+the landing is the translated pitch, so asking for language after it means
+pitching in English to somebody who cannot read it. Tapping a language
+re-renders that screen in it immediately.
+
+`app/index.tsx` now has two gates, and `landingPending` includes
+`hasChosenSetup`. **Do not remove that term** — without it both effects fire on
+the same render and the landing lands on top of a setup screen nobody answered.
+Setup returns with `router.back()` rather than navigating to the landing itself,
+for the same reason: `index.tsx` owns what comes next.
+
+**Google and Apple sign-in, real rather than decorative.** `src/auth/oauth.ts`
+plus `src/ui/AuthProviderButtons.tsx`, on both the landing and the sign-in
+screen.
+
+- **No new native module, deliberately.** `expo-web-browser` and
+  `expo-auth-session` would each cost a dev-client rebuild and EAS quota
+  (section 7e). `app.json` already declares `privatetexts` and `expo-linking`
+  is already installed, which is a complete round trip: ask Supabase for the
+  URL with `skipBrowserRedirect`, open the system browser, catch the callback
+  deep link in `app/_layout.tsx`, exchange the code.
+- **`client.ts` now sets `flowType: 'pkce'`.** Not cosmetic. The implicit
+  default returns real access and refresh tokens in the redirect's URL
+  *fragment*, which on a phone travels through the OS link handler and into
+  logs. Password reset is unaffected — it verifies a six-digit OTP, not a link.
+- **The `_layout.tsx` listener guards against replaying a spent code** with a
+  `handledUrls` ref, and reads the translator through a ref so the effect can
+  stay `[]`. Without that, a language change re-runs the effect, `getInitialURL`
+  returns the same callback, and the second exchange fails — telling the player
+  their sign-in broke immediately after it worked.
+- **The buttons do not imitate Google's or Apple's artwork.** No SVG library,
+  no brand assets, and an approximation is both a trademark problem and visibly
+  wrong beside the real thing. They use the app's own type and colours.
+  `PROVIDERS` is ordered Apple-first because Apple requires it. Replacing the
+  labels with official assets is a store-submission requirement —
+  `docs/STORE-COMPLIANCE.md` section 8a.
+
+**They do nothing until the providers are enabled in Supabase.** Steps are in
+`docs/SUPABASE.md` section 4a, including the trap: Google's authorised redirect
+is the *Supabase* callback, not the app scheme. Apple needs a paid developer
+account; Google does not. Until enabled, the buttons say so in the player's
+language rather than failing silently.
+
+**Privacy and terms where people are.** Their own Legal section in Settings
+above About, and a footer on the landing screen. URLs live once, in
+`src/settings/about.ts` (`PRIVACY_URL`, `TERMS_URL`), pointing at the GitHub
+blobs — which is also the privacy policy URL Google Play accepts.
+
+**Still unverified:** device layout for all of it, and the OAuth round trip
+itself, which cannot be tested without the dashboard configured.
 
 ### Already established, do not redo
 

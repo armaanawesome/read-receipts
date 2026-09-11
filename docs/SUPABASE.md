@@ -191,6 +191,59 @@ with "Invalid API key" against this project; the legacy keys keep working and
 `src/auth/config.ts` accepts either, so this is not blocking. Supabase deprecates
 legacy keys at the end of 2026, so it is worth revisiting before then.
 
+## 4a. Google and Apple sign-in
+
+The buttons exist in the app (`src/auth/oauth.ts`, `src/ui/AuthProviderButtons.tsx`).
+They do nothing until the providers are switched on here, and until then they
+say so in the player's language rather than failing silently -- Supabase answers
+"Unsupported provider", which `isUnconfigured()` maps to
+`auth.provider.unconfigured`.
+
+**Three things, in the dashboard.**
+
+1. **Authentication > URL Configuration > Redirect URLs.** Add:
+
+   ```
+   privatetexts://auth/callback
+   ```
+
+   Also add the `exp://` form Expo prints when the dev server starts, if you
+   want the buttons to work under `dev.cmd` rather than only in a build. They
+   are genuinely different addresses; `Linking.createURL` produces whichever
+   one is right at runtime, which is why the app does not hardcode either.
+
+2. **Authentication > Providers > Google.** Enable it, then paste a client ID
+   and secret from a Google Cloud OAuth 2.0 Web application credential. The
+   authorised redirect URI on the Google side is the Supabase callback, NOT the
+   app scheme:
+
+   ```
+   https://<project-ref>.supabase.co/auth/v1/callback
+   ```
+
+   This trips people up every time. Google redirects to Supabase; Supabase
+   redirects to the app.
+
+3. **Authentication > Providers > Apple.** Enable it, then supply the Services
+   ID, Team ID, Key ID and the `.p8` key from an Apple Developer account. Same
+   redirect rule as Google.
+
+   **Apple needs a paid Apple Developer account.** Google does not. If there is
+   no Apple account yet, leave Apple switched off: the button is still there,
+   it explains itself, and Apple's Guideline 4.8 -- which requires Sign in with
+   Apple wherever another third-party sign-in is offered -- only bites at store
+   submission, not in a demo.
+
+**Why the flow is PKCE.** `src/auth/client.ts` sets `flowType: 'pkce'`. The
+implicit default hands back the access and refresh tokens in the URL fragment
+of the redirect, which on a phone means real credentials travelling through the
+OS link handler and into logs. PKCE sends a single-use code and keeps the
+verifier on the device. Do not change it back.
+
+**Password reset is unaffected.** That flow verifies a six-digit OTP token
+(`verifyRecoveryCode`), not a magic link, and OTP verification does not depend
+on the flow type.
+
 ## 5. Verifying it
 
 Row-level security is the thing most likely to be silently wrong, and a wrong
