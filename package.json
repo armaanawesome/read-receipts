@@ -51,5 +51,6 @@
     "build:play:android": "npx eas-cli@latest build --profile preview --platform android --non-interactive --no-wait",
     "build:purchase": "npx eas-cli@latest build --profile development --platform ios --non-interactive --no-wait"
   },
-  "private": true
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE"
 }

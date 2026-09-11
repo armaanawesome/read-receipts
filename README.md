@@ -208,6 +208,10 @@ their own test file; the full list is under `src/engine/*.test.ts`,
 
 ## Working on this
 
+Contributing? Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before your first
+commit — it is short, and the part about who owns what you write is the part
+that is expensive to skip.
+
 New to the project? Read [`docs/ORIENTATION.md`](docs/ORIENTATION.md) first —
 ten minutes, and it covers what is decided, what is still open, and the four
 things that will otherwise confuse you. This section is the reference you come
@@ -261,6 +265,43 @@ Expo SDK 57 · React Native 0.86 · React 19 · TypeScript 6 (strict,
 `noUncheckedIndexedAccess`) · expo-router · Zustand · Zod ·
 react-native-reanimated 4 · react-native-purchases · Vitest.
 
-## License
+## Licence
 
-[MIT](LICENSE)
+Split, on purpose.
+
+| What | Licence |
+|---|---|
+| **Code** — `src/`, `app/`, `supabase/`, `tools/`, tests, config | [MIT](LICENSE). Take it. |
+| **The game** — `content/cases/`, `assets/`, `docs/storybook.*` | [Proprietary](CONTENT-LICENSE). All rights reserved. |
+
+The engine is worth more shared than hoarded. The cases are the product. A
+single MIT licence over both granted the world the right to sell the game,
+which was a drafting mistake rather than a decision — see
+[`docs/LEGAL-REVIEW.md`](docs/LEGAL-REVIEW.md), Count 1, including what the
+change cannot undo.
+
+Third-party notice text is in
+[`THIRD-PARTY-NOTICES.md`](THIRD-PARTY-NOTICES.md), generated from the
+installed tree. Asset provenance is in
+[`assets/ASSET-LICENCES.md`](assets/ASSET-LICENCES.md).
+
+## Legal
+
+An adversarial legal review of the whole app — sixteen counts, worst first,
+each citing the file it is about — is in
+[`docs/LEGAL-REVIEW.md`](docs/LEGAL-REVIEW.md). It is written as the brief
+opposing counsel would file, because a friendly audit finds friendly problems.
+
+| Document | What it is for |
+|---|---|
+| [`PRIVACY.md`](PRIVACY.md) | What the app collects, and every right you have over it |
+| [`TERMS.md`](TERMS.md) | Licence to play, refunds, liability |
+| [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, and what is in scope |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Sign-off, and what licence your contribution carries |
+| [`docs/DATA-PROCESSING.md`](docs/DATA-PROCESSING.md) | Art. 30 record, processors, the 72-hour breach drill |
+| [`docs/STORE-COMPLIANCE.md`](docs/STORE-COMPLIANCE.md) | The answers to give Apple and Google, decided in advance |
+
+Short version of the privacy policy: no ads, no analytics, no tracking SDKs,
+nothing sold. The game plays fully without an account. With one, a server holds
+your email address and which cases you have solved, and you can delete both
+from inside the app.

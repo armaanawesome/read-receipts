@@ -237,16 +237,33 @@ sync, not the game. Rating guidance recorded in `docs/STORE-COMPLIANCE.md`.
 
 ---
 
-## Count 9 — 22 audio files and 19 images with no provenance record. HIGH
+## Count 9 — No asset carries a provenance record. MEDIUM
 
 `assets/audio/` holds 22 `.wav` files and `assets/` holds 19 `.png`. There is
 no licence file, no credit list and no source record anywhere in the tree.
-`HANDOFF.md` records that nobody has ever listened to the audio on a handset.
 
-You cannot presently prove chain of title to a single shipped asset. If one
-`.wav` came from a library with attribution or non-commercial terms, that is
-infringement plus a takedown plus a store removal — and the burden of proving
-the licence is yours.
+**Correction, after checking rather than assuming.** This count first read that
+chain of title could not be proven for any shipped asset. That is wrong about
+the audio, and the error was mine. Every `.wav` is synthesised by
+`tools/make-audio.mjs`, which is in this repository, and that file's opening
+comment states the reason outright: a competition entry needs every asset
+clearly licensed, and generated sound has no third-party rights attached at
+all. It is reproducible too -- delete the directory, run the generator, the
+files come back. The audio was handled deliberately, and well, before this
+review started.
+
+What is true is narrower. **The images have no provenance record.** Sixteen
+covers were produced across Canva and Gamma over several sessions with no note
+of which tool made which file. Canva's licence permits commercial use of a
+design but not the shipping of a stock element standalone, and an image
+generated from a text prompt attracts thin copyright or none in the US, the UK
+and most of the EU -- so the covers can ship, but they cannot anchor a trade
+mark. Neither point requires a change today. Both require writing down what was
+used while somebody still remembers.
+
+And the audio, though clean, had **nothing recording that it was clean**. A
+provable fact nobody has written down still costs an afternoon to re-derive
+under pressure, usually on the day it is least available.
 
 Related: the licences panel in `src/settings/about.ts` lists thirteen packages
 by name and licence *type*. The MIT licence requires that "the above copyright
