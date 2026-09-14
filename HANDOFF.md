@@ -111,13 +111,27 @@ All of these are already set up. Nothing here needs recreating.
 | Service | Identity | Notes |
 |---|---|---|
 | **Devpost** | academic email | Registered for Shipaton 2026. The student-email check is the Next Gen gate. |
-| **Expo / EAS** | `armaanaswm` · `armaan.sami@bscdsmh.christuniversity.in` | Project `shipaton-detective`, id `998feb4c-b919-478e-9798-d7afe3b9c40f`. Free tier. |
+| **Expo / EAS** | `armaanaswm` · academic email | Project `shipaton-detective`, id `998feb4c-b919-478e-9798-d7afe3b9c40f`. Free tier. |
 | **GitHub** | `armaanawesome` | `gh` CLI authed with `repo` scope. Push works. |
 | **RevenueCat** | academic email | Project *Shipaton Detective*. Test Store key registered as an EAS env var. |
 | **OneSignal** | — | App created, Android enabled. App id in EAS env. Not yet wired into the app. |
 | **Limrun** | — | Cloud iOS simulators in the browser. **This is how iOS gets tested with no Mac.** |
 | **Mobbin** | — | MCP connected. Design reference for the craft passes. **Does not propagate to subagents** — see §6. |
-| **Supabase** | armaan1902@gmail.com | Accounts and cross-device progress. Schema + verified RLS in `docs/SUPABASE.md`. |
+| **Supabase** | personal email | Accounts and cross-device progress. Schema + verified RLS in `docs/SUPABASE.md`. |
+
+**No email addresses in this table.** Two rows carried real ones — the
+academic address on the EAS row and a personal Gmail on Supabase — in a public
+repository, where address-scrapers find them in minutes. Which account owns a
+service is the useful fact; the address is not, and whoever needs it already has
+it. Removed 2026-09-15.
+
+That is only half the exposure, and the smaller half. **Both addresses are also
+the author email on every commit in this repository**, which GitHub publishes by
+design and which editing a file does nothing about. Closing that properly means
+either accepting it, or rewriting history and force-pushing — which invalidates
+the collaborator's clone. Going forward, GitHub's *Keep my email address
+private* setting plus the `users.noreply.github.com` address stops new commits
+adding to it. See `docs/LEGAL-REVIEW.md`, Count 17.
 
 **Secrets live in exactly two places** — never in the repo:
 - Local dev: `.env` (gitignored)

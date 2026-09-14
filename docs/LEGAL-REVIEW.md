@@ -47,11 +47,25 @@ Aggravating: `package.json` sets `"private": true` and carries no `license`
 field, contradicting the MIT file. Ambiguity in a licence is construed against
 the drafter — here, against you.
 
-**Status: FIXED.** Code stays MIT so the collaborator and the judges can use it
-freely. Narrative content and assets move to a proprietary licence in
-`CONTENT-LICENSE`, and `LICENSE` is scoped explicitly to code. See "What this
-can and cannot do" in `CONTENT-LICENSE` for an honest account of the part that
-cannot be undone.
+**Status: LEGALLY FIXED. NOT HIDDEN.** Read this before assuming otherwise.
+
+Code stays MIT so the collaborator and the judges can use it freely. Narrative
+content and assets move to a proprietary licence in `CONTENT-LICENSE`, and
+`LICENSE` is scoped explicitly to code.
+
+**A licence is a fence, not a wall.** It changes what somebody is *permitted* to
+do. It removes nothing. All 173 files under `content/` are still on GitHub, still
+readable by anyone, and still contain every solution to every case -- 3,803 words
+in `the-bothy.ts` alone. Anyone who wants to know who did it can read it in a
+browser in ten seconds, and the only thing standing between a competitor and a
+rebranded clone is now their willingness to be sued rather than their ability to
+get the files.
+
+That is a deliberate trade, not an oversight, and it is the right one *while the
+repository is the contest submission*: the Next Gen award is judged on the repo
+rather than a store listing, so judges have to be able to read it. If that ever
+stops being true, the options are in "The content is readable, and what to do
+about it" below.
 
 ---
 
@@ -389,6 +403,73 @@ The leftover `privatetexts://` scheme from the previous name is harmless but
 will confuse anyone reading the manifest.
 
 Not a defect. A cost you should choose deliberately rather than discover.
+
+---
+
+## Count 17 - Two real email addresses in a public repository. MEDIUM
+
+Found 2026-09-15, on a sweep prompted by the right question: what can somebody
+actually take from this repo?
+
+`HANDOFF.md` carried an academic address on the Expo/EAS row and a personal
+Gmail on the Supabase row. Both in a public repository, where address-scrapers
+find them in minutes. The academic one is worse than the Gmail: it names the
+institution and its address format, which is a start on a password reset for an
+account that also gates the Next Gen student eligibility.
+
+**Status: HALF FIXED, and the half that remains cannot be fixed by editing.**
+
+The file no longer carries either address -- the table already used "academic
+email" as a convention for two other rows, so the fix was to apply it
+consistently.
+
+**But both addresses are the author email on every commit in this repository.**
+GitHub publishes that by design; it is how contribution graphs work. Editing a
+file does nothing about it. The complete options are:
+
+1. **Accept it.** A commit author email is normal and expected on a public repo,
+   and the volume here is one person's side project.
+2. **Rewrite history and force-push.** Removes it, and invalidates the
+   collaborator's clone -- they would have to re-clone. Do not do this in the
+   fortnight before a deadline.
+3. **Stop it growing**, which is worth doing either way and costs nothing:
+   GitHub Settings > Emails > *Keep my email address private*, then set
+   `git config user.email` to the `users.noreply.github.com` address it gives
+   you. New commits stop carrying a real address.
+
+Option 3 today, and a decision about 1 versus 2 after the deadline, is the
+sensible order.
+
+---
+
+## The content is readable, and what to do about it
+
+Not a count -- a decision that keeps coming back, recorded here so it stops
+being rediscovered.
+
+Every case, every solution, every translation is in `content/` on a public
+GitHub repository: 173 tracked files. The paywall gates *convenience* -- a
+built app, on a phone, with the reading experience -- and nothing else.
+
+**Three honest options.**
+
+| | What it costs |
+|---|---|
+| **Leave it public** | A motivated person can read the answers or clone the game. In practice almost nobody does this to a small indie title, and the licence makes selling a clone actionable. **Judges can read it, which the Next Gen award requires.** |
+| **Make the repo private now, public at submission** | Closes the window until the deadline. Costs nothing technically. But the content is equally readable the moment it goes public, so this buys weeks, not protection. |
+| **Move `content/` to a private repo** | Real protection. Costs a submodule or a build step, breaks a judge's ability to clone and run, and is the wrong shape for a contest whose deliverable IS the repository. |
+
+**The recommendation is the first one, until the contest is over.** The repo is
+the submission; a submission nobody can read is not a submission. After the
+deadline, if this ships commercially, the third option becomes the right one and
+the work is a day.
+
+What is NOT at risk, checked rather than assumed on 2026-09-15: no `.env` has
+ever been committed, no API key or token appears in any tracked file or anywhere
+in history, no Supabase project URL is tracked, and every `service_role` /
+`sb_secret_` string in the repo is documentation, a guard clause, or a test
+fixture. The two JWT-shaped hits in history are PNG bytes inside the cover-art
+commits.
 
 ---
 
