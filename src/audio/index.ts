@@ -14,3 +14,11 @@ export { useBed } from './useBed';
 export { playBed, stopBed } from './music';
 export { MENU_BED, bedSource } from './beds';
 export { resolveBedVolume } from './volume';
+/**
+ * Configuring the audio session is the one thing worth doing before anything
+ * asks for a sound — see the note in sound.ts about what a cold session costs.
+ * Exported for `app/_layout.tsx` and nothing else.
+ */
+export { primeAudio, audioSessionReady } from './sound';
+/** For the dev-only diagnostic in app/debug.tsx. */
+export { audioLog, clearAudioLog, type AudioEvent } from './diagnostics';

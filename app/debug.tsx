@@ -3,6 +3,11 @@ import { View, Text, StyleSheet, Pressable, ScrollView, Platform } from 'react-n
 import { Redirect } from 'expo-router';
 
 import { theme } from '@/ui/theme';
+import { audioLog, audioSessionReady, clearAudioLog, playBed, stopBed, MENU_BED } from '@/audio';
+import { CUES, CUE_IDS } from '@/audio/cues';
+import { resolveBedVolume, resolveVolume } from '@/audio/volume';
+import { feedback } from '@/settings/feedback';
+import { useSettingsStore } from '@/settings/settingsStore';
 import { useEntitlements } from '@/entitlements/useEntitlements';
 import {
   getCasePackOffering,
@@ -31,6 +36,18 @@ export default function DebugPurchaseScreen() {
 
   const { entitlementIds, loading, error, refresh } = useEntitlements();
   const [log, setLog] = useState<string[]>([]);
+  /*
+   * The audio half of this screen.
+   *
+   * Same reason the RevenueCat half exists: a subsystem that reports success and
+   * produces nothing needs somewhere to state what it actually did. Four rounds
+   * of audio fixes shipped without one — see HANDOFF §7j and the note at the top
+   * of src/audio/diagnostics.ts.
+   */
+  const settings = useSettingsStore((s) => s.settings);
+  const settingsHydrated = useSettingsStore((s) => s.hydrated);
+  /** Bumped to re-read the log, which is module state rather than store state. */
+  const [audioTick, setAudioTick] = useState(0);
   // StoreKit and Play Billing queue duplicate calls; the UI must not let the
   // user fire a second purchase while one is in flight.
   const [buying, setBuying] = useState(false);
@@ -126,6 +143,76 @@ export default function DebugPurchaseScreen() {
         <Text style={styles.buttonText}>Why is it still locked?</Text>
       </Pressable>
 
+      {/* ------------------------------------------------------------ audio */}
+      <Text style={styles.heading}>Audio</Text>
+
+      {/* The three settings that can each independently zero a sound, shown as
+          stored rather than as defaults — a stale `soundVolume` on disk is
+          invisible from every other screen in the app. */}
+      <Text style={styles.meta}>
+        settings {settingsHydrated ? 'read from disk' : 'STILL DEFAULTS (not hydrated)'}
+      </Text>
+      <Text style={styles.meta}>
+        soundEnabled {String(settings.soundEnabled)} · soundVolume {settings.soundVolume} ·
+        reduceMotion {String(settings.reduceMotion)}
+      </Text>
+      <Text style={styles.meta}>session configured: {String(audioSessionReady())}</Text>
+      <Text style={styles.meta}>
+        bed gain {resolveBedVolume(settings).toFixed(3)} ·{' '}
+        {CUE_IDS.map((id) => `${id} ${resolveVolume(settings, CUES[id]).toFixed(3)}`).join(' · ')}
+      </Text>
+
+      {CUE_IDS.map((id) => (
+        <Pressable
+          key={id}
+          style={[styles.button, styles.buttonGhost]}
+          onPress={() => {
+            feedback.cue(id);
+            setAudioTick((n) => n + 1);
+          }}
+        >
+          <Text style={styles.buttonText}>Play cue: {id}</Text>
+        </Pressable>
+      ))}
+      <Pressable
+        style={[styles.button, styles.buttonGhost]}
+        onPress={() => {
+          // Stop first: playBed is idempotent on the track, so replaying the bed
+          // already playing would otherwise report nothing at all.
+          stopBed();
+          playBed(MENU_BED, settings);
+          setAudioTick((n) => n + 1);
+        }}
+      >
+        <Text style={styles.buttonText}>Play bed: menu</Text>
+      </Pressable>
+      <Pressable
+        style={[styles.button, styles.buttonGhost]}
+        onPress={() => {
+          clearAudioLog();
+          setAudioTick((n) => n + 1);
+        }}
+      >
+        <Text style={styles.buttonText}>Clear audio log</Text>
+      </Pressable>
+
+      <View style={styles.log} key={audioTick}>
+        {audioLog().length === 0 ? (
+          <Text style={styles.logLine}>
+            (nothing yet — the audio layer has not been asked for a sound)
+          </Text>
+        ) : (
+          audioLog().map((e, i) => (
+            <Text
+              key={i}
+              style={[styles.logLine, e.kind === 'failed' ? styles.error : null]}
+            >
+              {e.kind} {e.subject} — {e.detail}
+            </Text>
+          ))
+        )}
+      </View>
+
       <View style={styles.log}>
         {log.map((line, i) => (
           <Text key={i} style={styles.logLine}>
@@ -145,6 +232,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   meta: { ...theme.type.meta, color: theme.color.textDim },
+  heading: { ...theme.type.body, color: theme.color.text, marginTop: theme.space.lg },
   error: { ...theme.type.meta, color: theme.color.dangerText },
   button: {
     backgroundColor: theme.color.bubbleYou,

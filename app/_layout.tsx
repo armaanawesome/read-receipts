@@ -8,7 +8,7 @@ import { hydrateSettings } from '@/settings/persistence';
 import { SettingsGlyph } from '@/settings/SettingsList';
 import { syncProgress, useAuth, completeOAuthRedirect } from '@/auth';
 import { useRevenueCatIdentity } from '@/entitlements/useRevenueCatIdentity';
-import { stopBed } from '@/audio';
+import { stopBed, primeAudio } from '@/audio';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { theme } from '@/ui/theme';
@@ -165,6 +165,19 @@ export default function RootLayout() {
    */
   useEffect(() => {
     void hydrateSettings();
+  }, []);
+
+  /**
+   * Configure the audio session before anything asks it for a sound.
+   *
+   * It used to be configured lazily, by whichever cue or bed happened to be
+   * first — and because that call did not wait for the session to come up, the
+   * first sound of every cold start was handed to an unconfigured one. The menu
+   * bed is the first thing the app asks for, so that was not an edge case; it
+   * was every launch. sound.ts can still prime itself, and now nothing has to.
+   */
+  useEffect(() => {
+    void primeAudio();
   }, []);
 
   /** For the OAuth result alerts below. Read through a ref, see the note there. */
