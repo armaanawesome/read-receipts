@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
@@ -12,6 +12,7 @@ import { nextCaseAfter } from '@/state/progression';
 import { isCaseUnlocked } from '@/entitlements/access';
 import { useEntitlements } from '@/entitlements/useEntitlements';
 import { useLocalisedCases } from '@/i18n/useCase';
+import { feedback } from '@/settings/feedback';
 import type { CaseScript } from '@/engine';
 
 /** See app/landing.tsx: an opacity dip alone reads as nothing on Android. */
@@ -85,6 +86,18 @@ export function CaseClosedScreen({
   const { entitlementIds } = useEntitlements();
   const restart = useCaseStore((s) => s.restart);
 
+  /*
+   * The file closing. This screen is the payoff for the whole case and had no
+   * audio of any kind.
+   *
+   * Mount rather than focus, and an empty dependency list: it should land once,
+   * as the screen arrives, and not fire again every time the player comes back
+   * to it from the paywall or the case list.
+   */
+  useEffect(() => {
+    feedback.cue('caseClosed');
+  }, []);
+
   const killer = script.characters.find((c) => c.id === script.solution.killerId);
   const next = nextCaseAfter(script.id, cases);
   /*
@@ -105,11 +118,13 @@ export function CaseClosedScreen({
    * to pop and replacing is the only way out.
    */
   const goHome = useCallback(() => {
+    feedback.tap();
     if (router.canGoBack()) router.dismissAll();
     else router.replace('/');
   }, [router]);
 
   const replay = useCallback(() => {
+    feedback.tap();
     restart();
     // Written straight away, so the emptied case survives the app being killed
     // before the player reads a single message of it. saveProgress reads the
@@ -142,6 +157,7 @@ export function CaseClosedScreen({
    */
   const openNext = useCallback(() => {
     if (!next) return;
+    feedback.tap();
     if (!nextUnlocked) {
       router.replace('/paywall');
       return;

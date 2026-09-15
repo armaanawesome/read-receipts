@@ -230,6 +230,93 @@ function accusation() {
   return buf;
 }
 
+/**
+ * A pairing that does not contradict, and a killer who has an answer for you.
+ *
+ * The counterpart to `contradiction()`, and deliberately not a buzzer. The
+ * engine's refusal is a LESSON — it says the two claims are about different
+ * people, or different times — so this is a soft falling minor third that reads
+ * as "no, but keep going" rather than as a penalty. A game that scolds you for
+ * testing a hypothesis stops people testing hypotheses.
+ *
+ * Pitched at E5/C5 for the same reason everything else moved up: 300Hz is about
+ * where a handset speaker starts working at all.
+ */
+function refused() {
+  const buf = buffer(0.4, CUE_RATE);
+  addTone(buf, CUE_RATE, {
+    freq: 659.3,
+    start: 0,
+    length: 0.16,
+    gain: 0.4,
+    curve: 11,
+    harmonic: 0.1,
+  });
+  addTone(buf, CUE_RATE, {
+    freq: 523.3,
+    start: 0.1,
+    length: 0.3,
+    gain: 0.44,
+    curve: 7,
+    harmonic: 0.08,
+  });
+  return buf;
+}
+
+/**
+ * The file closing. Arrives after the epilogue, once the case is actually over.
+ *
+ * Quieter and slower than `confession()` on purpose: the confession is the
+ * climax and this is the door shutting behind it. A triumphant sting here would
+ * step on the moment the player just earned.
+ */
+function caseClosed() {
+  const buf = buffer(1.4, CUE_RATE);
+  // The thud of a cover coming down, carried by the transient rather than a
+  // fundamental the speaker cannot move.
+  addNoise(buf, CUE_RATE, { start: 0, length: 0.07, gain: 0.4, cutoff: 2000, curve: 20 });
+  addTone(buf, CUE_RATE, { freq: 392, start: 0.02, length: 1.1, gain: 0.44, curve: 3, attack: 0.02 });
+  addTone(buf, CUE_RATE, {
+    freq: 493.9,
+    start: 0.12,
+    length: 1.0,
+    gain: 0.36,
+    curve: 3,
+    attack: 0.03,
+  });
+  addTone(buf, CUE_RATE, {
+    freq: 587.3,
+    start: 0.22,
+    length: 0.95,
+    gain: 0.3,
+    curve: 2.6,
+    attack: 0.03,
+  });
+  return buf;
+}
+
+/**
+ * A button doing what buttons do. The lightest thing in the set.
+ *
+ * `flourish`, so Reduce Motion silences it — this is the one cue that carries no
+ * information whatever, and it is also the one that fires most often. Kept very
+ * short and very quiet for the reason cues.ts argues at length: a deduction game
+ * played with the phone face up must not sound like keyboard clatter.
+ */
+function tap() {
+  const buf = buffer(0.07, CUE_RATE);
+  addNoise(buf, CUE_RATE, { start: 0, length: 0.016, gain: 0.34, cutoff: 7200, curve: 40 });
+  addTone(buf, CUE_RATE, {
+    freq: 1568,
+    start: 0,
+    length: 0.04,
+    gain: 0.2,
+    curve: 30,
+    attack: 0.001,
+  });
+  return buf;
+}
+
 /* ----------------------------------------------------------------- music -- */
 
 const MUSIC_RATE = 16000;
@@ -321,7 +408,7 @@ function bed(seed) {
 
 mkdirSync(OUT, { recursive: true });
 
-const CUES = { message, pin, contradiction, confession, accusation };
+const CUES = { message, pin, contradiction, confession, accusation, refused, caseClosed, tap };
 let total = 0;
 for (const [name, make] of Object.entries(CUES)) {
   const bytes = writeWav(`${name}.wav`, normalise(make()), CUE_RATE);
@@ -354,4 +441,6 @@ for (const name of TRACKS) {
   console.log(`bed   ${name.padEnd(16)} ${(bytes / 1024).toFixed(0)}KB`);
 }
 
-console.log(`\ntotal ${(total / 1024 / 1024).toFixed(1)}MB across ${5 + TRACKS.length} files`);
+console.log(
+  `\ntotal ${(total / 1024 / 1024).toFixed(1)}MB across ${Object.keys(CUES).length + TRACKS.length} files`,
+);

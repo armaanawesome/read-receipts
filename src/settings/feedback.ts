@@ -29,6 +29,21 @@ export const feedback = {
     fire(Haptics.selectionAsync());
   },
 
+  /**
+   * A primary button being pressed. Sound and a light knock together.
+   *
+   * Its own method rather than folded into `selection()`, deliberately. Several
+   * controls already pair `selection()` with a cue of their own — a claim chip
+   * plays `pin` — and adding a tap in there would fire two sounds on one press.
+   * This is for the buttons that currently produce nothing at all: the front
+   * door, the end of setup, the ways out of a finished case.
+   */
+  tap(): void {
+    const settings = currentSettings();
+    if (settings.hapticsEnabled) fire(Haptics.selectionAsync());
+    playCue('tap', settings);
+  },
+
   impact(style: 'light' | 'medium'): void {
     if (!currentSettings().hapticsEnabled) return;
     fire(

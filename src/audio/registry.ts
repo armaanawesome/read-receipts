@@ -32,4 +32,7 @@ export const CUE_SOURCES: Record<CueId, number | null> = {
   contradiction: require('../../assets/audio/contradiction.wav'),
   confession: require('../../assets/audio/confession.wav'),
   accusation: require('../../assets/audio/accusation.wav'),
+  refused: require('../../assets/audio/refused.wav'),
+  caseClosed: require('../../assets/audio/caseClosed.wav'),
+  tap: require('../../assets/audio/tap.wav'),
 };

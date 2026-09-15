@@ -69,6 +69,14 @@ export function EvidenceBoard() {
       feedback.cue('contradiction');
     } else {
       feedback.notify('warning');
+      /*
+       * The refusal is not a failure state, and it is the reason this game
+       * exists: the engine says these two claims are about different people, or
+       * different times, and that explanation is what turns a wrong pairing into
+       * a lesson. It fired a haptic and nothing else, so the single most
+       * characteristic moment in the game was the one with no sound.
+       */
+      feedback.cue('refused');
     }
     // Persist after the verdict resolves: a proven contradiction unlocks
     // threads, and losing that to a force-quit would be brutal.

@@ -73,6 +73,11 @@ export function ClaimMenu({
                   key={c.id}
                   onPress={() => {
                     feedback.notify('success');
+                    // Putting a statement on the record is step two of the loop
+                    // and was the only step with no sound at all. Reuses `pin`
+                    // rather than authoring a fifth sting: it is the same act
+                    // the chip makes on the board, one screen earlier.
+                    feedback.cue('pin');
                     onPick(c);
                   }}
                   accessibilityRole="button"

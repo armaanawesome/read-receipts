@@ -73,8 +73,17 @@ export function AccusationScreen() {
   function commitAccusation(person: Character) {
     setPending(null);
     feedback.notify('warning');
-    feedback.cue('accusation');
     const outcome = evaluateAccusation(script!, person.id, progress);
+    /*
+     * AFTER the evaluation, not before it.
+     *
+     * The gavel used to fire on the way in, which meant being refused on the
+     * proof gate, being refused on identity, and correctly naming the killer
+     * all sounded exactly the same. The gavel is the sound of a judgement being
+     * recorded; a refusal is the game declining to record one, and it now says
+     * so.
+     */
+    feedback.cue(outcome.correct ? 'accusation' : 'refused');
     setResult(outcome);
     // Written to disk here rather than left in component state, which is
     // where the result used to live and die: closing the app after

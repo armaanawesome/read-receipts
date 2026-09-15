@@ -9,6 +9,7 @@ import { useTranslator } from '@/i18n/useTranslator';
 import { useSettingsStore } from '@/settings/settingsStore';
 import { feedback } from '@/settings/feedback';
 import { Section, ToggleRow } from '@/settings/SettingsList';
+import { useBed, MENU_BED } from '@/audio';
 
 /**
  * The first screen anybody sees. Language, sound, haptics, motion — once.
@@ -58,6 +59,17 @@ export default function SetupScreen() {
   const settings = useSettingsStore((s) => s.settings);
   const update = useSettingsStore((s) => s.update);
 
+  /*
+   * This screen runs before everything, including the landing, so it is the
+   * first chance the game has to make a sound at all.
+   *
+   * It also asks the player to decide about sound while they can hear what they
+   * are deciding about — the toggle above turns this bed off under their finger,
+   * which is a far better answer to "do you want sound" than a switch with no
+   * consequence until two screens later.
+   */
+  useBed(MENU_BED);
+
   /**
    * Memoised, NOT inline — an inline literal is a fresh object every render and
    * loops `setOptions` until React throws "Maximum update depth exceeded". The
@@ -88,6 +100,7 @@ export default function SetupScreen() {
   const done = useCallback(() => {
     update({ hasChosenSetup: true });
     feedback.notify('success');
+    feedback.cue('tap');
     if (router.canGoBack()) router.back();
     else router.replace('/');
   }, [update, router]);

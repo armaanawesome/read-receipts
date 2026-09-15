@@ -12,6 +12,8 @@ import { DEMO_CASE_ID } from '@content/cases';
 import { AuthProviderButtons } from '@/ui/AuthProviderButtons';
 import { PRIVACY_URL, TERMS_URL } from '@/settings/about';
 import { render } from '@/i18n/message';
+import { useBed, MENU_BED } from '@/audio';
+import { feedback } from '@/settings/feedback';
 import type { Message } from '@/i18n/message';
 
 /**
@@ -60,6 +62,13 @@ export default function LandingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const reduceMotion = useReduceMotion();
+  /*
+   * The front door had no bed, and it is the FIRST screen of a cold start --
+   * so a new player met the whole onboarding flow in silence and the game only
+   * found its voice once they reached the case list. Same menu track the home
+   * screen uses, so crossing between them is continuous rather than a restart.
+   */
+  useBed(MENU_BED);
   const update = useSettingsStore((s) => s.update);
   /** Whatever the provider buttons have to report. Null most of the time. */
   const [notice, setNotice] = useState<Message | null>(null);
@@ -82,6 +91,7 @@ export default function LandingScreen() {
    */
   const leave = useCallback(
     (to: 'sign-in' | 'demo') => {
+      feedback.tap();
       update({ hasSeenLanding: true });
       router.replace(to === 'demo' ? `/case/${DEMO_CASE_ID}/threads` : '/sign-in?onboarding=1');
     },

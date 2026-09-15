@@ -109,12 +109,17 @@ export function ConfrontationScreen({ script, progress, onClosed }: Props) {
 
     if (outcome.kind === 'repeat') {
       feedback.notify('warning');
+      feedback.cue('refused');
       say([{ key: `r-${Date.now()}`, who: 'them', text: t('confront.repeat') }]);
       return;
     }
 
     if (outcome.kind === 'deflected') {
       feedback.impact('light');
+      // He had an answer for that one. Same sound as a pairing that does not
+      // hold, because it is the same thing happening: the player put something
+      // to the record and the record did not take it.
+      feedback.cue('refused');
       say([
         { key: `p-${item.key}-${Date.now()}`, who: 'you', text: item.label },
         { key: `d-${Date.now()}`, who: 'them', text: outcome.line },
