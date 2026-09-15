@@ -12,7 +12,7 @@ before a store release.
 
 ---
 
-## Audio — 22 files, all synthesised in this repo
+## Audio — 25 files, all synthesised in this repo
 
 **Licence: none needed. No third-party rights attached.**
 
@@ -32,9 +32,17 @@ node tools/make-audio.mjs
 
 | Files | Source | Licence |
 |---|---|---|
-| `audio/*.wav` (5 cues, 17 beds) | `tools/make-audio.mjs` in this repo | Own work, MIT with the code |
+| `audio/*.wav` (8 cues, 17 beds) | `tools/make-audio.mjs` in this repo | Own work, MIT with the code |
 
 To prove it, delete the directory and re-run the generator. The files come back.
+
+One caveat on "come back", worth knowing before anybody uses that as a check:
+`addNoise` and the bed generator both draw on `Math.random()`, so a re-run
+produces files that are byte-for-byte DIFFERENT and audibly identical. The
+regenerated set is equally unencumbered — that is the property this section
+claims — but `git status` will show twenty files modified, and committing that
+churn is 4MB of noise for nothing. Regenerate into a scratch directory if all
+you are doing is proving provenance.
 
 ---
 
