@@ -1,5 +1,6 @@
 import { it } from 'vitest';
 import { writeFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { CASES } from './index';
 import type { CaseScript } from '@/engine';
 
@@ -14,7 +15,21 @@ import type { CaseScript } from '@/engine';
  * the source — which is the right way round.
  */
 
-const DIR = 'C:/Users/armaa/Downloads/ClaudeCode/shipaton-detective/docs';
+/**
+ * Resolved from this file's own location, NOT written out as a path.
+ *
+ * It was an absolute path into one contributor's home directory
+ * (`C:/Users/armaa/...`), so on any other machine this test threw ENOENT and
+ * `check.cmd` could never go green — which matters more than a failing test
+ * usually would, because AGENTS.md §4 tells the next person to stop and
+ * investigate on a red suite. The second person to clone this repo met that
+ * wall on their first run.
+ *
+ * `import.meta.url` is the same mechanism vitest.config.mts already uses for its
+ * aliases, and it does not care about the working directory the suite was
+ * launched from.
+ */
+const DIR = fileURLToPath(new URL('../../docs', import.meta.url));
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
