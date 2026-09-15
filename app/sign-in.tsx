@@ -17,6 +17,7 @@ import { theme } from '@/ui/theme';
 import { useTranslator } from '@/i18n/useTranslator';
 import { render, type Message } from '@/i18n/message';
 import { AuthProviderButtons, AuthProviderDivider } from '@/ui/AuthProviderButtons';
+import { useSettingsStore } from '@/settings/settingsStore';
 import { EyeGlyph } from '@/ui/EyeGlyph';
 import type { Translator } from '@/i18n/translate';
 import {
@@ -132,7 +133,23 @@ export default function SignInScreen() {
   const finishOnboarding = useCallback(async () => {
     if (!onboarding) return;
     const solved = await readSolvedCaseIds();
-    router.replace(solved.has(DEMO_CASE_ID) ? '/' : `/case/${DEMO_CASE_ID}/threads`);
+    const next = solved.has(DEMO_CASE_ID) ? 'home' : 'demo';
+
+    /*
+     * Setup is the last step of the chain, so it goes here rather than in front
+     * of the landing -- and it is handed the destination this screen just
+     * worked out, because it cannot work it out for itself: only this screen
+     * knows the sync has landed.
+     *
+     * Skipped when the player has already answered it, which is every returning
+     * player signing in on a new phone.
+     */
+    const asked = useSettingsStore.getState().settings.hasChosenSetup;
+    if (!asked) {
+      router.replace(next === 'home' ? '/setup?next=home' : '/setup?next=demo');
+      return;
+    }
+    router.replace(next === 'home' ? '/' : `/case/${DEMO_CASE_ID}/threads`);
   }, [onboarding, router]);
 
   /**

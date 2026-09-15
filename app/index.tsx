@@ -142,34 +142,41 @@ export default function CaseSelectScreen() {
   const navReady = rootState?.key !== undefined;
 
   /**
-   * Setup comes before the landing, and the order is the point.
+   * The landing is first. Nothing is in front of it.
    *
-   * The landing screen is the pitch — three bubbles of case text — and it is
-   * translated. Showing it before asking which language the player reads means
-   * pitching in English to somebody who cannot read it, with the picker two
-   * screens further in. So: setup, then landing.
+   * It is the one screen that explains what the game is, so it is what a player,
+   * a judge or a recording should open on. Setup used to sit in front of it and
+   * buried the pitch under a preferences form.
    *
-   * Both gates wait on `settingsHydrated` for the same reason. Preferences start
-   * at their defaults and are replaced wholesale once storage has been read, and
-   * both flags default to `false` — navigating before the read lands would show
-   * both screens to a returning player on every launch.
+   * Gated on `settingsHydrated`: preferences start at their defaults and are
+   * replaced wholesale once storage has been read, and the flag defaults to
+   * `false` — navigating before the read lands would show the landing to a
+   * returning player on every launch.
    */
-  const setupPending = settingsHydrated && !hasChosenSetup;
-  useEffect(() => {
-    if (navReady && setupPending) router.push('/setup');
-  }, [navReady, setupPending, router]);
-
-  /*
-   * `hasChosenSetup` is in this condition, not just in the one above it.
-   * Without it both effects fire on the same render on a first launch, and the
-   * landing lands on top of the setup screen the player has not answered yet.
-   * Setup returns with `router.back()`, which re-renders this screen with the
-   * flag set — and that is the render that pushes the landing.
-   */
-  const landingPending = settingsHydrated && hasChosenSetup && !hasSeenLanding;
+  const landingPending = settingsHydrated && !hasSeenLanding;
   useEffect(() => {
     if (navReady && landingPending) router.push('/landing');
   }, [navReady, landingPending, router]);
+
+  /**
+   * Setup is now the LAST step of onboarding, not the first, and the onboarding
+   * chain hands off to it directly:
+   *
+   *     landing -> sign in (or guest) -> setup -> the case
+   *
+   * So this gate is not how a new player reaches it. It exists for the one case
+   * the chain misses: an install from before `hasChosenSetup` existed, whose
+   * blob reads `hasSeenLanding: true` and `hasChosenSetup: false`. Those players
+   * have already been through the door and would otherwise never be asked.
+   *
+   * `hasSeenLanding` in the condition keeps the two gates from firing on the
+   * same render — during onboarding this one stays false until the landing is
+   * behind them, by which point they are not on this screen at all.
+   */
+  const setupPending = settingsHydrated && hasSeenLanding && !hasChosenSetup;
+  useEffect(() => {
+    if (navReady && setupPending) router.push('/setup');
+  }, [navReady, setupPending, router]);
 
   /**
    * "Next case", handed off through here.

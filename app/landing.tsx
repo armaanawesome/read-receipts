@@ -93,7 +93,20 @@ export default function LandingScreen() {
     (to: 'sign-in' | 'demo') => {
       feedback.tap();
       update({ hasSeenLanding: true });
-      router.replace(to === 'demo' ? `/case/${DEMO_CASE_ID}/threads` : '/sign-in?onboarding=1');
+
+      if (to === 'sign-in') {
+        router.replace('/sign-in?onboarding=1');
+        return;
+      }
+
+      /*
+       * Guest goes through setup on the way to the case, so the preferences
+       * question is asked once on both routes rather than only to the people
+       * who sign in. Skipped for anyone who has already answered it -- a
+       * returning player replaying the door should not be asked twice.
+       */
+      const asked = useSettingsStore.getState().settings.hasChosenSetup;
+      router.replace(asked ? `/case/${DEMO_CASE_ID}/threads` : '/setup?next=demo');
     },
     [update, router],
   );

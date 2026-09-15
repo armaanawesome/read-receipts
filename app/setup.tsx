@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '@/ui/theme';
 import { SUPPORTED_LOCALES } from '@/i18n/locales';
@@ -10,9 +10,28 @@ import { useSettingsStore } from '@/settings/settingsStore';
 import { feedback } from '@/settings/feedback';
 import { Section, ToggleRow } from '@/settings/SettingsList';
 import { useBed, MENU_BED } from '@/audio';
+import { DEMO_CASE_ID } from '@content/cases';
 
 /**
- * The first screen anybody sees. Language, sound, haptics, motion — once.
+ * Language, sound, haptics, motion — once, at the end of the front door.
+ *
+ * ## Where this sits, and why it moved
+ *
+ * It used to run FIRST, before the landing. The reasoning was sound on paper:
+ * the landing is the translated pitch, so asking about language after it means
+ * pitching in English to somebody who cannot read English.
+ *
+ * It was wrong in the room. Opening a game on a preferences form buries the one
+ * screen that explains what the game IS underneath a settings list, and the
+ * first thing anybody sees — a player, a judge, a recording — should be the
+ * three bubbles, not four toggles. So the order is now:
+ *
+ *     landing -> sign in (or guest) -> setup -> the case
+ *
+ * The cost is real and is accepted: a Spanish speaker reads the landing in
+ * English, because DEFAULT_LOCALE is 'en' and nothing reads the device locale.
+ * Seeding that default from the phone's own language would remove the cost
+ * entirely and is the obvious next move if it ever matters.
  *
  * ## Why this exists at all
  *
@@ -60,13 +79,14 @@ export default function SetupScreen() {
   const update = useSettingsStore((s) => s.update);
 
   /*
-   * This screen runs before everything, including the landing, so it is the
-   * first chance the game has to make a sound at all.
-   *
-   * It also asks the player to decide about sound while they can hear what they
-   * are deciding about — the toggle above turns this bed off under their finger,
+   * Asks the player to decide about sound while they can hear what they are
+   * deciding about — the toggle below turns this bed off under their finger,
    * which is a far better answer to "do you want sound" than a switch with no
    * consequence until two screens later.
+   *
+   * (This used to be the first screen in the app and therefore the first sound
+   * it could make. It is now the last step of onboarding, so the landing has
+   * already played; the point about the toggle is what still matters.)
    */
   useBed(MENU_BED);
 
@@ -90,20 +110,31 @@ export default function SetupScreen() {
   );
 
   /**
-   * Mark the setup done and get out of the way.
+   * Where to go when this screen is finished.
    *
-   * `back()` rather than `replace('/landing')`, and the difference matters:
-   * `app/index.tsx` owns the decision about what comes next, and it pushes the
-   * landing screen the moment it sees this flag set. Navigating straight to the
-   * landing from here would race that effect and push it twice.
+   * Passed in rather than worked out here, because the two callers know the
+   * answer and this screen does not. The landing's guest button sends
+   * `next=demo`; the sign-in screen sends `demo` or `home` depending on whether
+   * the tutorial is already solved, which it can only tell AFTER its sync has
+   * landed.
+   *
+   * Absent means somebody reached this screen outside the onboarding chain --
+   * the gate in `app/index.tsx` catching an install that predates this flag --
+   * and the right answer there is to go back where they came from.
    */
+  const { next } = useLocalSearchParams<{ next?: string }>();
+
+  /** Mark the setup done and hand off to whatever comes next. */
   const done = useCallback(() => {
     update({ hasChosenSetup: true });
     feedback.notify('success');
     feedback.cue('tap');
-    if (router.canGoBack()) router.back();
+
+    if (next === 'demo') router.replace(`/case/${DEMO_CASE_ID}/threads`);
+    else if (next === 'home') router.replace('/');
+    else if (router.canGoBack()) router.back();
     else router.replace('/');
-  }, [update, router]);
+  }, [update, router, next]);
 
   return (
     <>
