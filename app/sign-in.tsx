@@ -108,9 +108,22 @@ export default function SignInScreen() {
    * worst possible place for one.
    */
   const leave = useCallback(() => {
+    /*
+     * Leaving mid-onboarding still goes through setup, once.
+     *
+     * Without this, "keep playing" is a hole in the chain: the landing set
+     * hasSeenLanding on the way here, nothing else asks, and a player who
+     * declines an account is never offered a language. Nothing on this screen
+     * pushes setup while the form is open -- only the two ways out do, which is
+     * the whole point of the bug this replaced.
+     */
+    if (onboarding && !useSettingsStore.getState().settings.hasChosenSetup) {
+      router.replace('/setup?next=home');
+      return;
+    }
     if (router.canGoBack()) router.back();
     else router.replace('/');
-  }, [router]);
+  }, [router, onboarding]);
 
   /**
    * Where to go once the account is settled — but only when this screen is

@@ -46,7 +46,6 @@ export default function CaseSelectScreen() {
   const router = useRouter();
   const localeTag = useSettingsStore((s) => s.settings.localeTag);
   const hasSeenLanding = useSettingsStore((s) => s.settings.hasSeenLanding);
-  const hasChosenSetup = useSettingsStore((s) => s.settings.hasChosenSetup);
   const settingsHydrated = useSettingsStore((s) => s.hydrated);
   const {
     entitlementIds,
@@ -158,25 +157,27 @@ export default function CaseSelectScreen() {
     if (navReady && landingPending) router.push('/landing');
   }, [navReady, landingPending, router]);
 
-  /**
-   * Setup is now the LAST step of onboarding, not the first, and the onboarding
-   * chain hands off to it directly:
+  /*
+   * There is NO setup gate on this screen, and there must not be one.
    *
-   *     landing -> sign in (or guest) -> setup -> the case
+   * There was, and it caused the exact bug it looks like it prevents. The gate
+   * read `hasSeenLanding && !hasChosenSetup` and was meant to catch an install
+   * predating the setup screen. But this screen stays MOUNTED underneath the
+   * landing, so the instant the landing set `hasSeenLanding: true` and replaced
+   * itself with the sign-in form, this effect re-ran, saw both conditions
+   * satisfied, and pushed /setup on top of the sign-in screen -- before the
+   * player had typed an email address.
    *
-   * So this gate is not how a new player reaches it. It exists for the one case
-   * the chain misses: an install from before `hasChosenSetup` existed, whose
-   * blob reads `hasSeenLanding: true` and `hasChosenSetup: false`. Those players
-   * have already been through the door and would otherwise never be asked.
+   * The state `hasSeenLanding: true, hasChosenSetup: false` means BOTH "already
+   * been through the door" and "halfway through the door right now", and from
+   * here those two are indistinguishable. So the decision belongs to the screens
+   * that know which one it is: the landing's guest button and the sign-in
+   * screen's exits route through /setup themselves.
    *
-   * `hasSeenLanding` in the condition keeps the two gates from firing on the
-   * same render — during onboarding this one stays false until the landing is
-   * behind them, by which point they are not on this screen at all.
+   * The cost is that an install predating `hasChosenSetup` is never asked. That
+   * is acceptable -- they are already playing, and Settings carries every one of
+   * those controls.
    */
-  const setupPending = settingsHydrated && hasSeenLanding && !hasChosenSetup;
-  useEffect(() => {
-    if (navReady && setupPending) router.push('/setup');
-  }, [navReady, setupPending, router]);
 
   /**
    * "Next case", handed off through here.
@@ -207,12 +208,13 @@ export default function CaseSelectScreen() {
   }, [navReady, open, router]);
 
 
-  // Blank for the frame between the effect firing and the next screen arriving.
-  // The grid drawn underneath is a screen this player has not earned the right
-  // to see yet, and a flash of it is how the last build opened. `setupPending`
-  // is here for the same reason the landing is: the setup screen is pushed from
-  // an effect, so there is a frame before it covers this one.
-  if (setupPending || landingPending) return <View style={styles.root} />;
+  // Blank for the frame between the effect firing and the landing arriving. The
+  // grid drawn underneath is a screen this player has not earned the right to
+  // see yet, and a flash of it is how the last build opened.
+  //
+  // Only the landing now. Setup is no longer pushed from this screen at all --
+  // see the note above the landing gate.
+  if (landingPending) return <View style={styles.root} />;
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
