@@ -130,9 +130,30 @@ export default function SetupScreen() {
     feedback.notify('success');
     feedback.cue('tap');
 
-    if (next === 'demo') router.replace(`/case/${DEMO_CASE_ID}/threads`);
-    else if (next === 'home') router.replace('/');
-    else if (router.canGoBack()) router.back();
+    // The case is never already on the stack, so replacing into it is safe.
+    if (next === 'demo') {
+      router.replace(`/case/${DEMO_CASE_ID}/threads`);
+      return;
+    }
+
+    /*
+     * Everything else wants the home screen that is ALREADY MOUNTED underneath
+     * this one -- not a second copy of it.
+     *
+     * `router.replace('/')` does not reuse it. React Navigation's REPLACE swaps
+     * the route at the CURRENT index and does not look down the stack for a
+     * route of the same name, so replacing into '/' from here leaves the
+     * original index mounted at position 0 and stacks a fresh one on top. Two
+     * live copies of the home screen: two `useBed(MENU_BED)` loops, two
+     * `useEntitlements()` RevenueCat listeners that only unregister on an
+     * unmount the buried one never gets, and a back press that appears to do
+     * nothing because it pops to the other copy of the screen you are looking
+     * at.
+     *
+     * `back()` is always available on the paths that reach here -- every one of
+     * them arrived by replacing a screen that was itself pushed over index.
+     */
+    if (router.canGoBack()) router.back();
     else router.replace('/');
   }, [update, router, next]);
 

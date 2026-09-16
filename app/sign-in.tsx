@@ -379,8 +379,17 @@ export default function SignInScreen() {
             <Text style={styles.title}>{t('signIn.createAccount')}</Text>
             <Text style={styles.reason}>{t('signIn.age.blocked')}</Text>
 
+            {/*
+              `leave`, not `router.replace('/')`.
+
+              Replacing into '/' from this screen leaves the home screen mounted
+              underneath and stacks a second copy on top -- see the note in
+              app/setup.tsx. It also skipped the setup screen outright, so a
+              player who declined an account HERE was the one person never asked
+              which language they read. `leave` handles both.
+            */}
             <Pressable
-              onPress={() => router.replace('/')}
+              onPress={leave}
               accessibilityRole="button"
               style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
             >
