@@ -11,7 +11,7 @@
  * one way to fire a cue, and it is not this file.
  */
 export { useBed } from './useBed';
-export { playBed, stopBed } from './music';
+export { playBed, stopBed, setBedVolume } from './music';
 export { MENU_BED, bedSource } from './beds';
 export { resolveBedVolume } from './volume';
 /**

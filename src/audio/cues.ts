@@ -46,8 +46,17 @@ export interface Cue extends CueGain {
 }
 
 export const CUES: Record<CueId, Cue> = {
-  /** A bubble arrived. You are already watching it appear. */
-  message: { id: 'message', role: 'flourish', gain: 0.45 },
+  /**
+   * A bubble arrived. You are already watching it appear.
+   *
+   * Raised from 0.45 after the first device report said the text tone never
+   * came. It was firing — `MessageList` calls it on every revealed message that
+   * somebody else sent, and that call site is correct — it was landing about
+   * 6dB UNDER a continuously playing bed. A sound that is present and masked is
+   * indistinguishable from a sound that is absent, and the bug report will
+   * always say absent. The other half of this fix is BED_GAIN in volume.ts.
+   */
+  message: { id: 'message', role: 'flourish', gain: 0.7 },
   /** A claim went onto the board. The chip already changed state. */
   pin: { id: 'pin', role: 'flourish', gain: 0.35 },
   /** Two statements cannot both be true. This is the game; it is never silent. */

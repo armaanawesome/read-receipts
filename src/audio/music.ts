@@ -24,6 +24,16 @@ import { describe, note } from './diagnostics';
 let player: AudioPlayer | null = null;
 /** Which track that player holds, so an unchanged track is never restarted. */
 let current: string | null = null;
+/**
+ * The track the app WANTS playing, which is not the same question as which one
+ * has a player.
+ *
+ * Kept separately so muting can release the native player without losing the
+ * answer to "what should be playing here". Without it, turning the volume to
+ * zero and back up again would leave silence: the player is gone, and the only
+ * thing that knew the track id went with it.
+ */
+let desired: string | null = null;
 
 /**
  * Play `trackId` on a loop, or stop everything when it is null.
@@ -34,31 +44,63 @@ let current: string | null = null;
  * on every render would be a stutter rather than a soundtrack.
  */
 export function playBed(trackId: string | null, prefs: VolumePrefs): void {
+  desired = trackId;
+  apply(prefs);
+}
+
+/**
+ * Re-apply the player's volume settings to whatever is already playing.
+ *
+ * ## The bug this exists for
+ *
+ * `useBed` runs inside `useFocusEffect`, so it re-fires only while ITS screen is
+ * the one in front. The volume slider lives in Settings, which is pushed on top
+ * of the home screen — so while somebody is dragging that slider, the only hook
+ * that could change the bed's volume belongs to a screen that is blurred and is
+ * not listening. The drone carried on at whatever level it started at, and the
+ * first device report said exactly that: "the slider is moving but volume is not
+ * decreasing or increasing".
+ *
+ * Volume is a property of the audio session rather than of a screen, so it is
+ * driven from the root layout, which is mounted for the life of the app and can
+ * never be the blurred one.
+ */
+export function setBedVolume(prefs: VolumePrefs): void {
+  apply(prefs);
+}
+
+function apply(prefs: VolumePrefs): void {
+  const trackId = desired;
   const volume = resolveBedVolume(prefs);
 
-  // Muted, silenced by Reduce Motion, or nowhere to play. Tear down rather than
-  // leave a silent player holding the audio session open.
+  // Muted, silenced by Reduce Motion, or nothing wanted. Release the player
+  // rather than leave a silent one holding the audio session open — but keep
+  // `desired`, so turning the volume back up resumes instead of going quiet
+  // until the player happens to change screen.
   if (trackId === null || volume <= 0) {
-    if (trackId !== null) note('skipped', `bed:${trackId}`, whyBedSilent(prefs));
-    stopBed();
+    if (trackId !== null && current !== null) {
+      note('skipped', `bed:${trackId}`, whyBedSilent(prefs));
+    }
+    release();
     return;
   }
 
   const source = bedSource(trackId);
   // No bed generated for this case yet. Silence, not an error.
   if (source === null) {
-    note('skipped', `bed:${trackId}`, 'no asset in beds.ts');
-    stopBed();
+    if (current !== null) note('skipped', `bed:${trackId}`, 'no asset in beds.ts');
+    release();
     return;
   }
 
   /*
-   * Already ours. Only the volume can have changed.
+   * Already ours. Only the volume can have changed — which is the whole point
+   * of this path, and is what `setBedVolume` comes here to do.
    *
    * Checked on `current` alone rather than on `current && player`, because the
-   * cold path below sets `current` before the player exists — and a second
-   * focus event arriving in that window would otherwise start a second copy of
-   * the same loop over the top of the first.
+   * cold path below sets `current` before the player exists, and a second call
+   * arriving in that window would otherwise start a second copy of the same
+   * loop over the first.
    */
   if (current === trackId) {
     if (player) player.volume = volume;
@@ -67,7 +109,7 @@ export function playBed(trackId: string | null, prefs: VolumePrefs): void {
 
   // Claim the slot synchronously, so the guard above is true for any call that
   // lands while the session is still being configured.
-  stopBed();
+  release();
   current = trackId;
 
   if (audioSessionReady()) {
@@ -98,7 +140,7 @@ function startBed(trackId: string, source: number, volume: number): void {
     // A missing codec, a device with no audio route, a player released under us.
     // Background music is the last thing that should take a case down.
     note('failed', `bed:${trackId}`, describe(e));
-    stopBed();
+    release();
   }
 }
 
@@ -115,8 +157,8 @@ function whyBedSilent(prefs: VolumePrefs): string {
   return `slider at ${prefs.soundVolume} resolves to zero amplitude`;
 }
 
-/** Stop and release. Safe to call when nothing is playing. */
-export function stopBed(): void {
+/** Drop the native player, keeping the answer to what ought to be playing. */
+function release(): void {
   try {
     player?.remove();
   } catch {
@@ -124,4 +166,16 @@ export function stopBed(): void {
   }
   player = null;
   current = null;
+}
+
+/**
+ * Stop, release, and forget the track.
+ *
+ * The public stop, for leaving the app entirely. `release()` is the internal
+ * one that a mute goes through, and the difference is `desired`: a mute has to
+ * remember what to bring back.
+ */
+export function stopBed(): void {
+  desired = null;
+  release();
 }

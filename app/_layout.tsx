@@ -5,10 +5,11 @@ import * as Linking from 'expo-linking';
 import { useTranslator } from '@/i18n/useTranslator';
 import { render } from '@/i18n/message';
 import { hydrateSettings } from '@/settings/persistence';
+import { useSettingsStore } from '@/settings/settingsStore';
 import { SettingsGlyph } from '@/settings/SettingsList';
 import { syncProgress, useAuth, completeOAuthRedirect } from '@/auth';
 import { useRevenueCatIdentity } from '@/entitlements/useRevenueCatIdentity';
-import { stopBed, primeAudio } from '@/audio';
+import { stopBed, primeAudio, setBedVolume } from '@/audio';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { theme } from '@/ui/theme';
@@ -179,6 +180,27 @@ export default function RootLayout() {
   useEffect(() => {
     void primeAudio();
   }, []);
+
+  /*
+   * Keep the playing bed at the volume the player just chose.
+   *
+   * This belongs at the ROOT and nowhere else. `useBed` lives inside
+   * `useFocusEffect`, so it only re-fires while its own screen is in front --
+   * and the volume slider is in Settings, pushed on top of the home screen. So
+   * the one hook that could have changed the bed's volume was, every single
+   * time somebody dragged that slider, attached to a blurred screen that was not
+   * listening. The first device report put it plainly: the slider moves and
+   * nothing happens.
+   *
+   * This layout is mounted for the life of the app and can never be the blurred
+   * one, which is the property the fix needs.
+   */
+  const soundEnabled = useSettingsStore((s) => s.settings.soundEnabled);
+  const soundVolume = useSettingsStore((s) => s.settings.soundVolume);
+  const bedReduceMotion = useSettingsStore((s) => s.settings.reduceMotion);
+  useEffect(() => {
+    setBedVolume({ soundEnabled, soundVolume, reduceMotion: bedReduceMotion });
+  }, [soundEnabled, soundVolume, bedReduceMotion]);
 
   /** For the OAuth result alerts below. Read through a ref, see the note there. */
   const t = useTranslator();

@@ -63,8 +63,26 @@ export function amplitudeFor(sliderPosition: number): number {
  * reproduce at all, the result was seventeen background tracks that nobody has
  * ever heard. The files are now normalised to 0.85 and pitched an octave and a
  * half higher; this is the runtime half of the same fix.
+ *
+ * ## Then it was a half, and a half was too far the other way
+ *
+ * The first person to hear it on a device called the menu bed "weird static
+ * noise", and said the text tone never arrived. Both complaints were this
+ * number. At a half the bed reached the speaker around -24dBFS while `message`
+ * landed near -30 — so the drone ran continuously about six decibels OVER the
+ * cue it was supposed to sit behind, and a 0.34s blip underneath that is not a
+ * blip anybody notices.
+ *
+ * Rebuilding the bed to stop it buzzing made this worse before it made it
+ * better: dropping the broken sub-4Hz noise layer freed headroom, the normaliser
+ * used it, and the files came back nearly 3dB LOUDER than the ones that were
+ * already too loud.
+ *
+ * 0.24 puts the bed near -28dBFS against a `message` cue at about -25, which is
+ * the right way round: the room is under the conversation. A bed is furniture.
+ * If it is the thing you notice, it is wrong however good it sounds.
  */
-const BED_GAIN = 0.5;
+const BED_GAIN = 0.24;
 
 /**
  * Whether a bed should play at all, and how loud.

@@ -358,36 +358,77 @@ function bed(seed) {
   const buf = buffer(LOOP, MUSIC_RATE);
   const n = buf.length;
 
+  /*
+   * ## Why this was rewritten: the first device report called it "static"
+   *
+   * Measured, the old version put **94% of its energy in one band, 300-600Hz**,
+   * and almost nothing anywhere else. That is the octave and the fifth sitting
+   * almost on top of each other with two detuned oscillators beating between
+   * them — which on a phone speaker is not a room, it is a narrow nasal buzz
+   * with a wobble on it. The fix for "inaudible" in the previous round had
+   * overshot into "audible and unpleasant": everything was pushed into the one
+   * band a handset reproduces best, and nothing was left anywhere else.
+   *
+   * A real room tone is broad and quiet. So the partials are spread across three
+   * octaves now and weighted DOWN as they rise, which is how an actual resonating
+   * space behaves, and the loudest single band carries about a third of the
+   * energy rather than all of it.
+   */
   for (let i = 0; i < n; i += 1) {
     const t = i / MUSIC_RATE;
+    const breath = Math.sin(2 * Math.PI * swell * t) * 0.5 + 0.5;
     // Two oscillators a few cents apart beat slowly against each other, which is
     // what stops a sustained tone sounding like a dial tone.
     const a = Math.sin(2 * Math.PI * root * t);
     const b = Math.sin(2 * Math.PI * root * 1.004 * t);
-    const fifth = Math.sin(2 * Math.PI * root * 1.5 * t) * 0.42;
+    const octave = Math.sin(2 * Math.PI * root * 2 * t);
+    const twelfth = Math.sin(2 * Math.PI * root * 3 * t);
+    const fifteenth = Math.sin(2 * Math.PI * root * 4 * t);
     /*
-     * The partials above the root are what survive a small speaker, so they
-     * carry most of the weight and the root itself is only the thing that gives
-     * them a pitch. Measured rather than guessed: with the root dominant, 57% of
-     * each bed's energy sat below 300Hz and was simply discarded by the
-     * hardware. This split puts the majority above it.
+     * The top partial is what the old bed had none of, and its absence is most
+     * of why that one sounded synthetic. A little air up here costs almost no
+     * energy and is the difference between a tone and a space.
      */
-    const octave = Math.sin(2 * Math.PI * root * 2 * t) * 0.46;
-    const twelfth = Math.sin(2 * Math.PI * root * 3 * t) * 0.2;
-    const breath = Math.sin(2 * Math.PI * swell * t) * 0.5 + 0.5;
+    const shimmer = Math.sin(2 * Math.PI * root * 6 * t);
+    /*
+     * Weighted to keep the bed OUT of 600-1200Hz, and that constraint is not
+     * aesthetic.
+     *
+     * `message` puts 93% of its energy at 880 and 1175Hz, so a drone whose own
+     * peak band is 600-1200 masks the text tone continuously — which is exactly
+     * the second thing the first device report complained about. The first
+     * attempt at this rewrite landed 69% of the bed in that band and would have
+     * traded a buzz for a mask. The octave carries the weight instead, and
+     * everything above it falls away fast.
+     */
     buf[i] =
-      (a + b) * 0.16 +
-      fifth * (0.35 + 0.4 * breath) +
-      octave * (0.5 + 0.5 * breath) +
-      twelfth * (0.3 + 0.5 * breath);
+      (a + b) * 0.15 +
+      octave * 0.34 * (0.6 + 0.4 * breath) +
+      twelfth * 0.1 * (0.5 + 0.5 * breath) +
+      fifteenth * 0.045 * (0.4 + 0.6 * breath) +
+      shimmer * 0.022 * (0.3 + 0.7 * breath);
   }
 
-  // A slow filtered-noise layer, so it reads as a room rather than as a synth.
+  /*
+   * Air, and this layer used to be the other half of the problem.
+   *
+   * It was a one-pole at alpha 0.0016, which at 16kHz is a corner around **4Hz**
+   * — so it produced no audible hiss at all, only a slow random DC wander. It
+   * was then multiplied by NINE, which did nothing a listener could hear except
+   * push the peaks around, and everything the normaliser could see: the wander
+   * stole the headroom, so the tones it was supposed to sit behind got scaled
+   * down to make room for something inaudible. bed-menu measured a DC offset of
+   * 0.0156, which is that wander showing up as a number.
+   *
+   * alpha 0.22 puts the corner near 560Hz, which is hiss a person can actually
+   * hear, and the gain is low enough that it sits under the tone rather than on
+   * top of it.
+   */
   let last = 0;
   for (let i = 0; i < n; i += 1) {
-    last += 0.0016 * (Math.random() * 2 - 1 - last);
+    last += 0.22 * (Math.random() * 2 - 1 - last);
     const breath = Math.sin((2 * Math.PI * swell * i) / MUSIC_RATE) * 0.5 + 0.5;
-    buf[i] += last * 9 * (0.3 + 0.7 * breath);
+    buf[i] += last * 0.06 * (0.4 + 0.6 * breath);
   }
 
   // Seamless: crossfade the tail over the head, then drop the tail.
