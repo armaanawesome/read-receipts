@@ -196,8 +196,8 @@ versions.
 
 ```
 ./check.cmd
- Test Files  140 passed (140)
-      Tests  4935 passed (4935)
+ Test Files  141 passed (141)
+      Tests  4951 passed (4951)
 ```
 
 Coverage on the engine and state layers (`src/engine/`, `src/state/`) is
@@ -207,6 +207,14 @@ their own test file; the full list is under `src/engine/*.test.ts`,
 `src/entitlements/*.test.ts`, and `content/cases/*.test.ts`.
 
 ## Working on this
+
+**Reading this to evaluate the project?** You need three things and none of
+them is long: this file, [`src/engine/contradiction.ts`](src/engine/contradiction.ts)
+(140 lines, and it is the whole game), and
+[`docs/storybook.md`](docs/storybook.md) if you want to read a case without
+playing it. Everything else in the list below is working material for the two
+people building this — `HANDOFF.md` in particular is a 1,800-line running log,
+kept because it is the project's memory, and not written for anybody else.
 
 Contributing? Read [`CONTRIBUTING.md`](CONTRIBUTING.md) before your first
 commit — it is short, and the part about who owns what you write is the part
@@ -251,8 +259,20 @@ section you need, not the whole file.
 
 ## Build
 
-<!-- PLACEHOLDER: Codemagic release APK link (Task 19 in HANDOFF.md). Not built yet, EAS-only for now. -->
-`[ Downloadable APK: not yet built. See docs/BUILDING.md for EAS instructions in the meantime. ]`
+An installable Android APK is produced by:
+
+```bash
+npm run build:play:android
+```
+
+That is a Release build: standalone, no Metro, and it opens the four free cases.
+`npm run build:purchase` is the Debug profile with all sixteen and a live
+purchase flow, and it needs Metro running. Both are explained in
+[`docs/BUILDING.md`](docs/BUILDING.md).
+
+EAS artifact links are tied to a specific build and do not stay valid forever,
+so the APK for the submission is attached to the Devpost entry rather than
+linked from here.
 
 ## Screenshots
 
@@ -294,8 +314,8 @@ opposing counsel would file, because a friendly audit finds friendly problems.
 
 | Document | What it is for |
 |---|---|
-| [`PRIVACY.md`](PRIVACY.md) | What the app collects, and every right you have over it |
-| [`TERMS.md`](TERMS.md) | Licence to play, refunds, liability |
+| [Privacy policy](https://armaanawesome.github.io/read-receipts/privacy/) | What the app collects, and every right you have over it. Source: [`PRIVACY.md`](PRIVACY.md) |
+| [Terms of use](https://armaanawesome.github.io/read-receipts/terms/) | Licence to play, refunds, liability. Source: [`TERMS.md`](TERMS.md) |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, and what is in scope |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Sign-off, and what licence your contribution carries |
 | [`docs/DATA-PROCESSING.md`](docs/DATA-PROCESSING.md) | Art. 30 record, processors, the 72-hour breach drill |
