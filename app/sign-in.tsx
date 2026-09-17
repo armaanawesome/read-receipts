@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { readSolvedCaseIds } from '@/state/persistence';
@@ -18,6 +19,7 @@ import { useTranslator } from '@/i18n/useTranslator';
 import { render, type Message } from '@/i18n/message';
 import { AuthProviderButtons, AuthProviderDivider } from '@/ui/AuthProviderButtons';
 import { useSettingsStore } from '@/settings/settingsStore';
+import { TERMS_URL } from '@/settings/about';
 import { EyeGlyph } from '@/ui/EyeGlyph';
 import type { Translator } from '@/i18n/translate';
 import {
@@ -552,9 +554,21 @@ export default function SignInScreen() {
               not only in a settings panel. Shown for sign-up only: an existing
               account holder already accepted these, and repeating it on every
               sign-in is noise that trains people to ignore it.
+
+              It carries the age requirement as well as the acceptance, because
+              this is the screen where the account is actually created and the
+              only other place that says it is the terms themselves. And it is a
+              Pressable rather than a Text: the string ends with "tap to read
+              them", so it has to be tappable or it is a lie in five languages.
             */}
             {mode === 'signUp' ? (
-              <Text style={styles.microcopy}>{t('signIn.terms')}</Text>
+              <Pressable
+                onPress={() => void Linking.openURL(TERMS_URL).catch(() => undefined)}
+                accessibilityRole="link"
+                hitSlop={theme.hit.slop}
+              >
+                <Text style={[styles.microcopy, styles.termsLink]}>{t('signIn.terms')}</Text>
+              </Pressable>
             ) : null}
 
             {leaveButton}
@@ -830,6 +844,7 @@ const styles = StyleSheet.create({
   quiet: { minHeight: theme.hit.min, alignItems: 'center', justifyContent: 'center' },
   quietText: { ...theme.type.body, color: theme.color.textDim },
 
+  termsLink: { textDecorationLine: 'underline' },
   microcopy: {
     ...theme.type.meta,
     color: theme.color.textDim,

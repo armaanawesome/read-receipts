@@ -1,3 +1,9 @@
+---
+layout: default
+title: Privacy policy
+permalink: /privacy/
+---
+
 # Privacy policy — Read Receipts
 
 **Last updated: 10 September 2026.**
@@ -162,13 +168,18 @@ people who no longer have the app.
 
 ## 6. Children
 
-Accounts are for players aged **16 and over**. The app asks before it creates
+Accounts are for players aged **13 and over**. The app asks before it creates
 one, and the answer is not stored.
+
+13 rather than 16 because the account is contract-based processing, not
+consent-based, so GDPR Article 8's 13-to-16 consent age does not set the
+threshold. 13 is COPPA's line and the one used here in every country. The
+reasoning is set out in full in `TERMS.md` section 5.
 
 **The game itself is open to everyone** and needs no account — a younger player
 loses cross-device sync and nothing else.
 
-We do not knowingly collect personal information from a child under 16. If you
+We do not knowingly collect personal information from a child under 13. If you
 believe a child has created an account, email us and it will be deleted without
 requiring proof.
 

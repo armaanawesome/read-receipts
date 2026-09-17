@@ -245,9 +245,34 @@ helpline in two packs, and a suicide-adjacent thread in `the-understudy`.
   declare the mature themes. A misrated app is removed, and the rating is an
   attestation you sign.
 
-**Status: FIXED.** A neutral age declaration gates *account creation only* —
-the game still plays offline on local saves, so a younger player loses cloud
-sync, not the game. Rating guidance recorded in `docs/STORE-COMPLIANCE.md`.
+**Status: FIXED, and the threshold corrected downward on 2026-09-18.** A neutral
+age declaration gates *account creation only* — the game still plays offline on
+local saves, so a younger player loses cloud sync, not the game. Rating guidance
+recorded in `docs/STORE-COMPLIANCE.md`.
+
+**The threshold was 16, and 16 was wrong.** It came from GDPR Article 8, which
+sets a digital consent age of 13 to 16. Article 8 governs processing based on
+**consent** — and this app's own stated basis, in the table in `PRIVACY.md`
+section 2, is **Art. 6(1)(b), performance of a contract**: the account exists to
+deliver the sync the player asked for. Article 8 does not reach contract-based
+processing, so it never set the threshold here.
+
+What actually applies is COPPA's under-13 line, which bites on services
+*directed to* children — a murder mystery with grief and a suicide thread is
+not one — and reduces in practice to "do not knowingly collect from under-13s".
+The UK Children's Code asks for age-appropriate *design* rather than a hard
+gate, and accepts self-declaration as its weakest tier. India's DPDP Act is
+genuinely stricter at under-18 with verifiable parental consent, and is
+complied with by almost nobody at this scale.
+
+So the gate is now **13**, stated in three places that have to agree: the
+question itself (`signIn.age.*`), the acceptance line at the point of account
+creation (`signIn.terms`, which now carries the age as well as the acceptance
+and is tappable through to the terms), and `TERMS.md` section 5, which sets out
+this reasoning for anybody who asks why it is not higher.
+
+Raising it back to 16 costs nothing legally and excludes 13-to-15-year-olds from
+*sync*. Lowering it below 13 is not available.
 
 ---
 

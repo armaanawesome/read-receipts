@@ -59,19 +59,28 @@ export const PRIVACY_POINTS: readonly StringKey[] = [
 /**
  * Where the legal documents actually live.
  *
- * GitHub rather than a marketing site, because there is no marketing site and a
- * settings row that opens a 404 is worse than no row. These URLs are public,
- * permanent, and render the Markdown properly on a phone. Google Play accepts a
- * link of this shape as the privacy policy URL, which is the requirement that
- * made them load-bearing rather than a nicety.
+ * GitHub PAGES, not a blob URL on github.com. The files are the same two --
+ * PRIVACY.md and TERMS.md at the repo root, still the only copies -- but Jekyll
+ * renders them as real pages at these paths, from the permalinks in their front
+ * matter and the exclude list in _config.yml.
+ *
+ * The difference is not cosmetic in the only way that counts: a player who taps
+ * "Privacy policy" and lands on a source-control file listing has been shown
+ * something that looks like it was not meant for them. Both stores accept a
+ * link of this shape as the privacy policy URL, so it satisfies the requirement
+ * as well as the blob URL did.
  *
  * Kept here, beside PRIVACY_POINTS, so the panel that summarises the policy and
  * the row that opens it cannot end up pointing at different things. If a real
  * domain ever exists, this is the one place to change.
+ *
+ * NOTE: these 404 until GitHub Pages is switched on -- Settings > Pages >
+ * Deploy from a branch > master > / (root). That is a repo setting and cannot
+ * be done from the codebase.
  */
-const REPO = 'https://github.com/armaanawesome/read-receipts/blob/master';
-export const PRIVACY_URL = `${REPO}/PRIVACY.md`;
-export const TERMS_URL = `${REPO}/TERMS.md`;
+const SITE = 'https://armaanawesome.github.io/read-receipts';
+export const PRIVACY_URL = `${SITE}/privacy/`;
+export const TERMS_URL = `${SITE}/terms/`;
 
 export interface Licence {
   readonly name: string;

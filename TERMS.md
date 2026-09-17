@@ -1,3 +1,9 @@
+---
+layout: default
+title: Terms of use
+permalink: /terms/
+---
+
 # Terms of use — Read Receipts
 
 **Last updated: 10 September 2026.**
@@ -74,8 +80,27 @@ local consumer law disagree, your local consumer law wins.
 
 An account is optional. The whole game works without one.
 
-You need to be **16 or over** to create one. You are responsible for keeping
-your password to yourself. Tell us if you think somebody else has it.
+**You must be 13 or over to create an account.** By creating one you are
+confirming that you are. The app asks once, before it takes an email address,
+and does not store your answer.
+
+Why 13 and not something higher: the account exists to carry your progress
+between your own devices, which makes it a contract you asked us to perform
+rather than something you consented to. GDPR Article 8 -- the rule that sets a
+digital consent age of 13 to 16 -- governs processing based on consent, so it
+does not set the threshold here. 13 is the threshold COPPA works to in the
+United States, and it is the one this app uses everywhere.
+
+**The game itself has no age requirement.** It plays in full with no account at
+all. A younger player loses cross-device sync and nothing else -- every case,
+every save and every purchase still works.
+
+Separately from this, the store's own age rating reflects the content, which
+includes murder throughout and, in one case, suicide. Check that rating before
+handing the game to a younger player.
+
+You are responsible for keeping your password to yourself. Tell us if you think
+somebody else has it.
 
 You can delete your account at any time from Settings → Account → Delete
 account. It is immediate and it cannot be undone.

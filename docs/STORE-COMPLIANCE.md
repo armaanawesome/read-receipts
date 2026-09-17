@@ -44,15 +44,17 @@ Same content, their vocabulary:
 
 ## 3. Account deletion — the URL Google asks for
 
-Google requires a link reachable **without installing the app**. Until there is
-a website, use the privacy policy's deletion section:
+Google requires a link reachable **without installing the app**. The privacy
+policy's deletion section, on the GitHub Pages site:
 
 ```
-https://github.com/armaanawesome/read-receipts/blob/master/PRIVACY.md#deleting-your-account-if-you-have-already-uninstalled
+https://armaanawesome.github.io/read-receipts/privacy/#deleting-your-account-if-you-have-already-uninstalled
 ```
 
-That satisfies the requirement — public, permanent, and it states the route. A
-dedicated page is nicer and is not a blocker.
+**This 404s until Pages is enabled** — Settings > Pages > Deploy from a branch >
+master > / (root). Do that before entering the URL in Play Console, or the
+review will fail on a dead link. The `_config.yml` and the front matter in
+`PRIVACY.md` are already in place; only the setting is missing.
 
 ## 4. Age rating
 

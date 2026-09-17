@@ -1,0 +1,48 @@
+# GitHub Pages, for one reason: the privacy policy and the terms need a URL
+# that reads as a product rather than as a repository. Same files, same words,
+# same single source of truth -- PRIVACY.md and TERMS.md are still the only
+# copies, and Jekyll renders them at /privacy/ and /terms/ from the permalinks
+# in their front matter.
+#
+# Turning it on is a REPO SETTING, not a file: Settings > Pages > Source:
+# Deploy from a branch > master > / (root). Nothing here does it for you.
+#
+# The exclude list is the important part. Without it Pages serves the whole
+# repository under the github.io domain. That is not new exposure -- the repo
+# is public either way -- but a legal site that also hosts the case scripts is
+# untidy, and every path below is either code, internal notes, or content that
+# has no business being a web page.
+
+title: Read Receipts
+description: A murder mystery told entirely through text threads.
+theme: jekyll-theme-minimal
+
+exclude:
+  - src/
+  - app/
+  - content/
+  - assets/
+  - tools/
+  - supabase/
+  - coverage/
+  - node_modules/
+  - design-system/
+  - docs/
+  - .expo/
+  - README.md
+  - AGENTS.md
+  - CLAUDE.md
+  - HANDOFF.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - THIRD-PARTY-NOTICES.md
+  - LICENSE
+  - CONTENT-LICENSE
+  - package.json
+  - package-lock.json
+  - tsconfig.json
+  - app.json
+  - eas.json
+  - vitest.config.mts
+  - check.cmd
+  - dev.cmd
