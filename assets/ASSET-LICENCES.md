@@ -12,7 +12,7 @@ before a store release.
 
 ---
 
-## Audio — 25 files, all synthesised in this repo
+## Audio — 26 files, all synthesised in this repo
 
 **Licence: none needed. No third-party rights attached.**
 
@@ -32,7 +32,7 @@ node tools/make-audio.mjs
 
 | Files | Source | Licence |
 |---|---|---|
-| `audio/*.wav` (8 cues, 17 beds) | `tools/make-audio.mjs` in this repo | Own work, MIT with the code |
+| `audio/*.wav` (9 cues, 17 beds) | `tools/make-audio.mjs` in this repo | Own work, MIT with the code |
 
 To prove it, delete the directory and re-run the generator. The files come back.
 

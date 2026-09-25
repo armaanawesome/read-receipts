@@ -96,7 +96,19 @@ export function MessageList({ thread, characters, onPressClaims }: Props) {
      * invoked more than once for a single call, and a cue is a side effect.
      */
     const revealed = thread.messages[shown];
-    if (revealed && revealed.senderId !== PLAYER_ID) feedback.cue('message');
+    if (revealed && revealed.senderId !== PLAYER_ID) {
+      /*
+       * Two tones, and the split is the same one the bubble already draws.
+       *
+       * A message carrying a claim is bold, white and accent-edged, because it
+       * is the only kind worth stopping on — it is what the player can pin. It
+       * sounded identical to small talk, so forty messages all announced
+       * themselves the same way and the ear learned nothing. `hasClaims` here is
+       * the exact condition ChatBubble styles on; the two must not drift.
+       */
+      const carriesClaim = (revealed.claims?.length ?? 0) > 0;
+      feedback.cue(carriesClaim ? 'messageClaim' : 'message');
+    }
     setShown((n) => Math.min(n + 1, thread.messages.length));
   }, [shown, thread.messages]);
 

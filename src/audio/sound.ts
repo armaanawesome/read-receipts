@@ -133,24 +133,38 @@ function start(id: CueId, source: number, volume: number): void {
     }));
     player.volume = volume;
     /*
-     * Rewind, then play — but never let the rewind decide whether the sound
-     * happens.
+     * Rewind, THEN play — and play on both outcomes of the rewind.
      *
-     * This used to be `seekTo(0).then(play).catch(() => {})`, which makes
-     * playback conditional on a promise that can reject: seeking a player that
-     * has not finished loading fails, and the empty catch then swallowed both
-     * the error and the sound. The first play of every cue is the one most
-     * likely to hit it, which is exactly the play that matters.
+     * Two bugs have lived on these four lines, and the fix for each one caused
+     * the other. Getting it right means refusing both, not picking a side.
      *
-     * So `play()` is called unconditionally and synchronously, and the rewind is
-     * a best-effort that runs first and only when there is something to rewind.
-     * A cue that starts from the wrong position is a small defect; a cue that
-     * never plays is the bug this file has been shipping.
+     * It was `seekTo(0).then(play).catch(() => {})`. That makes playback
+     * conditional on a promise that can reject — seeking a player that has not
+     * finished loading fails — and the empty catch swallowed the error AND the
+     * sound.
+     *
+     * So it became a fire-and-forget seek with an unconditional synchronous
+     * `play()` after it. That fixed the swallowing and broke the replay. One
+     * player is created per cue and reused, so once a cue has finished its
+     * `currentTime` sits at the END of the clip; calling `play()` there does
+     * nothing at all on AVPlayer or ExoPlayer, and the abandoned seek only
+     * landed in time for the tap AFTER the next one. The result was a text tone
+     * that alternated — played, silent, played, silent — which is reported, three
+     * times over, as "the text tone is not working".
+     *
+     * Waiting for the seek fixes the replay. Playing in BOTH branches keeps the
+     * first fix: a rejected seek still gets its sound, it just gets it from
+     * wherever the playhead happens to be, which is a far smaller defect than
+     * silence. Nothing here can swallow a cue any more.
      */
     if (player.isLoaded && player.currentTime > 0) {
-      void player.seekTo(0).catch(() => {});
+      player.seekTo(0).then(
+        () => player.play(),
+        () => player.play(),
+      );
+    } else {
+      player.play();
     }
-    player.play();
     note('played', `cue:${id}`, `volume ${volume.toFixed(3)}, loaded ${String(player.isLoaded)}`);
   } catch (e) {
     // A missing codec, a released player, a device with no audio route. None of

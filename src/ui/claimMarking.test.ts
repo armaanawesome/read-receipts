@@ -71,3 +71,44 @@ describe('claim marking survives Android', () => {
     ).toBeGreaterThanOrEqual(2);
   });
 });
+
+/**
+ * The same clue has to be marked to the EAR as well as the eye.
+ *
+ * A claim-bearing bubble is drawn differently and now sounds different too, and
+ * the two decisions live in different files — `ChatBubble` styles on
+ * `hasClaims`, `MessageList` picks the cue on `carriesClaim`. Both are the same
+ * question asked of the same field, and nothing but this test stops one of them
+ * being changed alone. A bubble that looks important and sounds like small talk
+ * is the defect this pair exists to prevent.
+ *
+ * Source-scanned for the reason the block at the top of this file explains:
+ * neither component can be rendered in the Node suite.
+ *
+ * WHAT THIS CANNOT SEE: whether the two tones are actually distinguishable by
+ * ear. It proves only that the two code paths still branch on the same fact.
+ */
+const LIST_SOURCE = readFileSync(join(__dirname, 'MessageList.tsx'), 'utf8');
+
+describe('a claim-bearing message is marked to the ear', () => {
+  it('branches the cue on the same field the bubble styles on', () => {
+    expect(LIST_SOURCE).toMatch(/claims\?\.length\s*\?\?\s*0\)\s*>\s*0/);
+    expect(SOURCE).toMatch(/claims\?\.length\s*\?\?\s*0\)\s*>\s*0/);
+  });
+
+  it('plays a different cue for a claim than for ordinary talk', () => {
+    expect(LIST_SOURCE).toContain("'messageClaim'");
+    expect(LIST_SOURCE).toContain("'message'");
+  });
+
+  /**
+   * `message` is a flourish and dies under Reduce Motion, which is right: a
+   * bubble arriving is already on screen. The claim tone must NOT be, because it
+   * is the only thing telling the player which of forty messages carries
+   * evidence.
+   */
+  it('keeps the claim tone alive under Reduce Motion', () => {
+    const cues = readFileSync(join(__dirname, '../audio/cues.ts'), 'utf8');
+    expect(cues).toMatch(/messageClaim:\s*\{[^}]*role:\s*'signal'/);
+  });
+});

@@ -296,6 +296,44 @@ function caseClosed() {
 }
 
 /**
+ * A message that puts something on the record.
+ *
+ * The bright sibling of `message()`. These are the bubbles the chat already
+ * draws differently — bold, white, with an accent edge — because they carry a
+ * claim the player can pin, and they are the only messages in the game that are
+ * worth stopping on. They sounded identical to small talk.
+ *
+ * An ASCENDING major figure against the falling fourth of the ordinary tone, so
+ * the two are told apart by shape rather than by pitch alone — which is what
+ * still works for somebody listening at low volume on a phone speaker.
+ *
+ * Deliberately above the ordinary tone and well clear of the bed: C6/E6/G6 sits
+ * where nothing else in the mix lives.
+ */
+function messageClaim() {
+  const buf = buffer(0.55, CUE_RATE);
+  const notes = [
+    { f: 1046.5, t: 0 },
+    { f: 1318.5, t: 0.075 },
+    { f: 1568.0, t: 0.15 },
+  ];
+  for (const { f, t } of notes) {
+    addTone(buf, CUE_RATE, {
+      freq: f,
+      start: t,
+      length: 0.34,
+      gain: 0.42,
+      curve: 7,
+      harmonic: 0.14,
+      attack: 0.003,
+    });
+  }
+  // A touch of air on the strike, so it reads as a bell rather than a beep.
+  addNoise(buf, CUE_RATE, { start: 0, length: 0.02, gain: 0.16, cutoff: 9000, curve: 34 });
+  return buf;
+}
+
+/**
  * A button doing what buttons do. The lightest thing in the set.
  *
  * `flourish`, so Reduce Motion silences it — this is the one cue that carries no
@@ -445,11 +483,134 @@ function bed(seed) {
   return normalise(buf.subarray(0, n - fade), 0.85);
 }
 
+/**
+ * The lobby, and the only track in the game that is composed rather than seeded.
+ *
+ * ## Why the menu gets its own generator
+ *
+ * `bed()` makes room tone: a drone whose job is to be forgotten while somebody
+ * reads a murder out of a phone. That is right for sixteen case screens and
+ * wrong for the one screen the player is NOT reading on. The home screen is
+ * where they choose, and a drone there is just a hum — the note back was that it
+ * sounded bad, and that it should be ominous without being unpleasant, and
+ * engaging.
+ *
+ * So this has what a drone deliberately lacks: a pulse, and a figure that
+ * arrives and goes away again.
+ *
+ *  - A slow heartbeat, every 1.2s. Momentum with no melody attached, and the
+ *    single most ominous rhythm there is because everybody already has one.
+ *  - A minor triad pad underneath, breathing.
+ *  - A falling three-note figure every four bars — A, G, E. Minor, unresolved,
+ *    and sparse enough that it never becomes a tune to get sick of.
+ *
+ * Sixteen seconds rather than eight, so the figure lands four times before it
+ * repeats and the loop is not obvious.
+ *
+ * Everything sits between 110 and 700Hz ON PURPOSE. Both message cues live from
+ * 880Hz up, and the last round of this proved that a bed occupying a cue's band
+ * masks it into a bug report — see the note on `message` in cues.ts.
+ */
+const MENU_LOOP = 16;
+
+function menuBed() {
+  const rate = MUSIC_RATE;
+  const buf = buffer(MENU_LOOP, rate);
+  const n = buf.length;
+
+  // A minor: the pad. Low, quiet, and slowly breathing.
+  const PAD = [
+    { f: 220.0, g: 0.2 },
+    { f: 261.63, g: 0.15 },
+    { f: 329.63, g: 0.12 },
+    { f: 440.0, g: 0.07 },
+  ];
+  for (let i = 0; i < n; i += 1) {
+    const t = i / rate;
+    const breath = Math.sin(2 * Math.PI * 0.055 * t) * 0.5 + 0.5;
+    let v = 0;
+    for (const { f, g } of PAD) {
+      // A few cents of detune per partial keeps the pad from sounding like a
+      // held organ chord.
+      v += Math.sin(2 * Math.PI * f * t) * g;
+      v += Math.sin(2 * Math.PI * f * 1.003 * t) * g * 0.6;
+    }
+    buf[i] = v * (0.55 + 0.45 * breath) * 0.5;
+  }
+
+  // The heartbeat. Two thumps a fifth of a second apart, then a long wait.
+  for (let beat = 0; beat * 1.2 < MENU_LOOP; beat += 1) {
+    const at = beat * 1.2;
+    for (const [off, gain] of [
+      [0, 0.5],
+      [0.2, 0.32],
+    ]) {
+      addTone(buf, rate, {
+        freq: 110,
+        start: at + off,
+        length: 0.22,
+        gain,
+        curve: 16,
+        attack: 0.004,
+        harmonic: 0.5,
+      });
+      addNoise(buf, rate, {
+        start: at + off,
+        length: 0.035,
+        gain: gain * 0.28,
+        cutoff: 1400,
+        curve: 26,
+      });
+    }
+  }
+
+  // The figure: A - G - E, falling, once every four seconds.
+  const FIGURE = [440.0, 392.0, 329.63];
+  for (let phrase = 0; phrase * 4 < MENU_LOOP; phrase += 1) {
+    FIGURE.forEach((f, k) => {
+      addTone(buf, rate, {
+        freq: f,
+        start: phrase * 4 + 0.4 + k * 0.42,
+        length: 1.5,
+        gain: 0.2,
+        curve: 3.2,
+        attack: 0.02,
+        harmonic: 0.22,
+      });
+    });
+  }
+
+  // Air, at the same corner the case beds use.
+  let last = 0;
+  for (let i = 0; i < n; i += 1) {
+    last += 0.22 * (Math.random() * 2 - 1 - last);
+    buf[i] += last * 0.045;
+  }
+
+  // Seamless, the same way bed() is.
+  const fade = Math.floor(0.6 * rate);
+  for (let i = 0; i < fade; i += 1) {
+    const k = i / fade;
+    buf[i] = buf[i] * k + buf[n - fade + i] * (1 - k);
+  }
+  return normalise(buf.subarray(0, n - fade), 0.85);
+}
+
 /* ------------------------------------------------------------------ main -- */
 
 mkdirSync(OUT, { recursive: true });
 
-const CUES = { message, pin, contradiction, confession, accusation, refused, caseClosed, tap };
+const CUES = {
+  message,
+  messageClaim,
+  pin,
+  contradiction,
+  confession,
+  accusation,
+  refused,
+  caseClosed,
+  tap,
+};
 let total = 0;
 for (const [name, make] of Object.entries(CUES)) {
   const bytes = writeWav(`${name}.wav`, normalise(make()), CUE_RATE);
@@ -477,7 +638,9 @@ const TRACKS = [
   'the-night-ferry',
 ];
 for (const name of TRACKS) {
-  const bytes = writeWav(`bed-${name}.wav`, bed(name), MUSIC_RATE);
+  // The lobby is composed rather than seeded — see the note on menuBed().
+  const samples = name === 'menu' ? menuBed() : bed(name);
+  const bytes = writeWav(`bed-${name}.wav`, samples, MUSIC_RATE);
   total += bytes;
   console.log(`bed   ${name.padEnd(16)} ${(bytes / 1024).toFixed(0)}KB`);
 }

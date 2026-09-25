@@ -28,6 +28,7 @@ import type { CueId } from './cues';
  */
 export const CUE_SOURCES: Record<CueId, number | null> = {
   message: require('../../assets/audio/message.wav'),
+  messageClaim: require('../../assets/audio/messageClaim.wav'),
   pin: require('../../assets/audio/pin.wav'),
   contradiction: require('../../assets/audio/contradiction.wav'),
   confession: require('../../assets/audio/confession.wav'),

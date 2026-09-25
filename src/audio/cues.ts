@@ -33,6 +33,7 @@ import type { CueGain } from './volume';
  */
 export type CueId =
   | 'message'
+  | 'messageClaim'
   | 'pin'
   | 'contradiction'
   | 'confession'
@@ -57,6 +58,20 @@ export const CUES: Record<CueId, Cue> = {
    * always say absent. The other half of this fix is BED_GAIN in volume.ts.
    */
   message: { id: 'message', role: 'flourish', gain: 0.7 },
+  /**
+   * A message that puts something on the record.
+   *
+   * These bubbles are already drawn differently — bold, white, accent edge —
+   * because they carry a claim the player can pin, and they are the only
+   * messages in the game worth stopping on. They sounded exactly like small
+   * talk, so the ear had no way to know which of forty messages mattered.
+   *
+   * A `signal`, unlike the ordinary tone, and the distinction is the usual one:
+   * this one tells the player something the screen would otherwise make them
+   * hunt for, so Reduce Motion must not take it away. Louder than `message` for
+   * the same reason.
+   */
+  messageClaim: { id: 'messageClaim', role: 'signal', gain: 0.8 },
   /** A claim went onto the board. The chip already changed state. */
   pin: { id: 'pin', role: 'flourish', gain: 0.35 },
   /** Two statements cannot both be true. This is the game; it is never silent. */
@@ -100,6 +115,7 @@ export const CUES: Record<CueId, Cue> = {
  */
 export const CUE_IDS: readonly CueId[] = [
   'message',
+  'messageClaim',
   'pin',
   'contradiction',
   'confession',
