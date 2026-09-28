@@ -1720,6 +1720,16 @@ if paused, **Restore project**; if gone, create one, re-run
 and the EAS `preview` environment, then rebuild. Until then every account
 feature -- sign-in, sync, delete-account, Google/Apple -- fails.
 
+**UPDATE, same night: the project is back.** The same host now resolves on
+both resolvers; with the anon key, `/auth/v1/health` and
+`/rest/v1/case_progress` both return 200, so the migration survived and the
+URL/key did not change -- no rebuild needed for the server. Paused-then-
+restored fits. It can pause again after a week idle on the free tier; the
+guest-mode message above is what players see if it does. **Still open:**
+`/auth/v1/settings` reports `google: false, apple: false` -- both providers
+are OFF in the dashboard, so those landing buttons fail until they are
+enabled (docs/SUPABASE.md §4a). Email sign-in is on.
+
 All five are locked by `src/audio/deviceReports.test.ts`, and each of its
 assertions was checked against the OLD files and would have failed on them.
 A test that cannot fail proves nothing.
