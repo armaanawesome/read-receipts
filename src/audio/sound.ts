@@ -189,14 +189,33 @@ function whySilent(prefs: VolumePrefs, role: 'signal' | 'flourish'): string {
   return `slider at ${prefs.soundVolume} resolves to zero amplitude`;
 }
 
-/** Frees the native players. For a settings screen unmount or a memory warning. */
-export function releaseAudio(): void {
-  for (const id of Object.keys(players) as CueId[]) {
+/**
+ * Stop a player and free it.
+ *
+ * NOT `remove()` alone, which is what this code used to trust. In expo-audio 57
+ * `remove()` only takes the player out of the module's registry -- Android's is
+ * `players.remove(player.id)`, iOS's `registry.remove(player)` -- and never
+ * stops it. A "released" bed kept looping, now invisible to this file AND to
+ * expo-audio's own pause-on-background, which walks that registry. So muting
+ * did nothing, every trip to the background left a loop running and stacked a
+ * second copy on return, the slider only reached the newest copy, and the music
+ * played on in the app switcher. `release()` is what actually tears it down.
+ */
+export function disposePlayer(p: AudioPlayer): void {
+  for (const step of [() => p.pause(), () => p.remove(), () => p.release()]) {
     try {
-      players[id]?.remove();
+      step();
     } catch {
       // Already gone. Nothing to do.
     }
+  }
+}
+
+/** Frees the native players. For a settings screen unmount or a memory warning. */
+export function releaseAudio(): void {
+  for (const id of Object.keys(players) as CueId[]) {
+    const p = players[id];
+    if (p) disposePlayer(p);
     delete players[id];
   }
 }

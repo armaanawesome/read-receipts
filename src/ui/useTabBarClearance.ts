@@ -26,10 +26,10 @@ import { clearanceFor } from './tabBarClearance';
  * under-padding hides a control the player has to tap.
  */
 
-/** UITabBar is 49pt; Android's BottomNavigationView is 56dp. */
-const BAR = Platform.select({ ios: 49, android: 56, default: 56 });
+/** UITabBar is 49pt. (Android's bar is 56dp, but it never overlays -- see clearanceFor.) */
+const BAR = 49;
 
 export function useTabBarClearance(): number {
   const insets = useSafeAreaInsets();
-  return clearanceFor(BAR, insets.bottom);
+  return clearanceFor(BAR, insets.bottom, Platform.OS);
 }

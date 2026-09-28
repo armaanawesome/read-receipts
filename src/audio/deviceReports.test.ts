@@ -168,6 +168,47 @@ describe('dragging the volume slider never restarts the music', () => {
   });
 });
 
+describe('a stopped loop is actually stopped', () => {
+  /*
+   * expo-audio 57's remove() only unregisters a player; it keeps playing. Every
+   * "release" left a loop running that nothing could reach: mute did nothing,
+   * the slider moved only the newest copy, copies stacked after each trip to the
+   * background, and the music carried on in the app switcher.
+   */
+  const sound = code('src/audio/sound.ts');
+  const music = code('src/audio/music.ts');
+
+  it('frees players with release(), not remove() alone', () => {
+    const start = sound.indexOf('export function disposePlayer(');
+    const dispose = start >= 0 ? sound.slice(start, sound.indexOf('\n}', start)) : '';
+    expect(dispose).toMatch(/\.release\(\)/);
+    expect(dispose).toMatch(/\.pause\(\)/);
+  });
+
+  it('never calls remove() anywhere but disposePlayer', () => {
+    const outside = sound.replace(/export function disposePlayer\([\s\S]*?\n\}/, '') + music;
+    expect(outside).not.toMatch(/\.remove\(\)/);
+  });
+
+  it('cannot build a second player when two cold starts land together', () => {
+    expect(music).toMatch(/current !== trackId \|\| player !== null/);
+  });
+});
+
+describe('leaving the app puts the music on standby', () => {
+  const root = code('app/_layout.tsx');
+
+  it('pauses on background and inactive, resumes on active', () => {
+    expect(root).toMatch(/pauseBed\(\)/);
+    expect(root).toMatch(/next === 'active'\)\s*\{\s*resumeBed\(\)/);
+  });
+
+  /* stopBed forgets the track, so a working stop would return to silence. */
+  it('does not stop the bed when the app is backgrounded', () => {
+    expect(root).not.toMatch(/stopBed\(/);
+  });
+});
+
 describe('a server that cannot be reached is named as one', () => {
   /**
    * The strings a dead or unreachable Supabase host actually produces: React

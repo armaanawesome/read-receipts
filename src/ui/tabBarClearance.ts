@@ -21,6 +21,16 @@
  * exactly, and trusting it exactly is what puts a docked control flush against
  * the top of the bar instead of a bar-height above it.
  */
-export function clearanceFor(bar: number, insetBottom: number): number {
+export function clearanceFor(bar: number, insetBottom: number, platform = 'ios'): number {
+  /*
+   * Android lays each tab screen out ABOVE its BottomNavigationView, and the
+   * bar itself sits above the system navigation buttons -- so neither needs
+   * clearing. Both reports behind this file were iPhones, where content runs
+   * under the floating bar. Applying the iOS rule on Android added 56 + 48dp
+   * of dead space under the board's "Run the check" (a device screenshot put
+   * the dock exactly that far above the bar) and squeezed the record into a
+   * three-row scroller.
+   */
+  if (platform === 'android') return 0;
   return insetBottom >= bar ? insetBottom : bar + insetBottom;
 }

@@ -1730,6 +1730,30 @@ guest-mode message above is what players see if it does. **Still open:**
 are OFF in the dashboard, so those landing buttons fail until they are
 enabled (docs/SUPABASE.md §4a). Email sign-in is on.
 
+### Second device pass, same night -- one root cause behind three reports
+
+Reports: music "comes back as the old static-y lobby" after sign-in, slider
+"still not working", music keeps playing in the app switcher. ONE cause:
+**expo-audio 57's `player.remove()` does not stop a player.** Android's native
+`remove` is `players.remove(player.id)`, iOS's `registry.remove(player)` -- an
+unregister, nothing more. `music.ts` "released" beds with `remove()`, so every
+mute, track change and background left the old loop playing, now unreachable
+from JS and skipped by expo-audio's own pause-on-background (it walks that
+registry). Any trip to the background (OAuth browser, password-manager sheet)
+stacked a second copy on return -- two offset loops is the "static" -- and
+the slider then moved only the newest copy. Fix: `disposePlayer` in
+`sound.ts` does pause + remove + **release()**. Never call `remove()` alone;
+`deviceReports.test.ts` fails if anyone does.
+
+Also: backgrounding now PAUSES the bed and `active` resumes it (standby);
+`stopBed` there forgot the track, so even a working stop came back to
+silence. Killing the app kills the loop with the process.
+
+**Board dead space (Android only).** `useTabBarClearance` applied the iOS rule
+(bar + inset) on Android, where the screen is laid out ABOVE the tab bar:
+104dp of nothing under "Run the check" on a 3-button-nav phone. Android now
+gets 0; iOS is unchanged -- both earlier clearance reports were iPhones.
+
 All five are locked by `src/audio/deviceReports.test.ts`, and each of its
 assertions was checked against the OLD files and would have failed on them.
 A test that cannot fail proves nothing.

@@ -1,6 +1,6 @@
 import { createAudioPlayer, type AudioPlayer } from 'expo-audio';
 import { bedSource } from './beds';
-import { audioSessionReady, primeAudio } from './sound';
+import { audioSessionReady, disposePlayer, primeAudio } from './sound';
 import { resolveBedVolume, type VolumePrefs } from './volume';
 import { describe, note } from './diagnostics';
 
@@ -46,6 +46,14 @@ let desired: string | null = null;
  * music down heard it start loud.
  */
 let latestPrefs: VolumePrefs | null = null;
+/**
+ * True while the app is off screen: backgrounded, or on iOS merely showing the
+ * app switcher. The player and track are KEPT, only paused, so coming back
+ * resumes mid-loop -- standby, not stop. A player that gets built while in
+ * standby (a cold start finishing late) is built paused for the same reason.
+ * Killing the app needs nothing from here: the loop dies with the process.
+ */
+let standby = false;
 
 /**
  * Play `trackId` on a loop, or stop everything when it is null.
@@ -79,6 +87,26 @@ export function playBed(trackId: string | null, prefs: VolumePrefs): void {
  */
 export function setBedVolume(prefs: VolumePrefs): void {
   apply(prefs);
+}
+
+/** The app left the screen. Pause, keep everything, so it can resume. */
+export function pauseBed(): void {
+  standby = true;
+  try {
+    player?.pause();
+  } catch (e) {
+    note('failed', `bed:${current ?? 'none'}`, describe(e));
+  }
+}
+
+/** The app is back in front. Carry on from where the loop was. */
+export function resumeBed(): void {
+  standby = false;
+  try {
+    player?.play();
+  } catch (e) {
+    note('failed', `bed:${current ?? 'none'}`, describe(e));
+  }
 }
 
 /**
@@ -150,8 +178,10 @@ function apply(prefs: VolumePrefs): void {
    * handed a session that had not been configured yet.
    */
   void primeAudio().then(() => {
-    // A different screen may have taken the slot while we waited.
-    if (current !== trackId) return;
+    // A different screen may have taken the slot while we waited -- or an
+    // earlier wait for this same track already built its player. Building a
+    // second would overwrite `player` and orphan the first, still looping.
+    if (current !== trackId || player !== null) return;
     // Re-resolve NOW. `volume` above is from before settings hydrated.
     const now = resolveBedVolume(latestPrefs ?? prefs);
     if (now <= 0) {
@@ -167,7 +197,7 @@ function startBed(trackId: string, source: number, volume: number): void {
     const next = createAudioPlayer(source, { keepAudioSessionActive: true });
     next.loop = true;
     next.volume = volume;
-    next.play();
+    if (!standby) next.play();
     player = next;
     note('played', `bed:${trackId}`, `volume ${volume.toFixed(3)}, looping`);
   } catch (e) {
@@ -191,15 +221,16 @@ function whyBedSilent(prefs: VolumePrefs): string {
   return `slider at ${prefs.soundVolume} resolves to zero amplitude`;
 }
 
-/** Drop the native player, keeping the answer to what ought to be playing. */
+/**
+ * Stop and free the native player, keeping the answer to what ought to be
+ * playing. Through `disposePlayer`, never `remove()` alone -- see its note in
+ * sound.ts. That one word left every "released" loop still playing.
+ */
 function release(): void {
-  try {
-    player?.remove();
-  } catch {
-    // Already gone.
-  }
+  const old = player;
   player = null;
   current = null;
+  if (old) disposePlayer(old);
 }
 
 /**

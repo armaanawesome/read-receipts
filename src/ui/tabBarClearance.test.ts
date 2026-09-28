@@ -43,6 +43,22 @@ describe('clearanceFor', () => {
    * treated as bar-inclusive, which is the conservative reading: it still clears
    * the bar exactly.
    */
+  /**
+   * Android lays the screen out above its tab bar. The iOS rule there put
+   * 104dp of dead space under the board's dock on a 3-button-nav phone and
+   * squeezed the record into a three-row scroller.
+   */
+  it('adds nothing on Android, whatever the inset', () => {
+    for (const inset of [0, 24, 48, 80]) {
+      expect(clearanceFor(56, inset, 'android')).toBe(0);
+    }
+  });
+
+  it('keeps the iOS rule on iOS', () => {
+    expect(clearanceFor(IOS_BAR, 34, 'ios')).toBe(83);
+    expect(clearanceFor(IOS_BAR, 83, 'ios')).toBe(83);
+  });
+
   it('treats an inset of exactly the bar height as already containing it', () => {
     expect(clearanceFor(IOS_BAR, 49)).toBe(49);
     expect(clearanceFor(IOS_BAR, 48)).toBe(97);

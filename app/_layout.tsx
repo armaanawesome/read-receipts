@@ -9,7 +9,7 @@ import { useSettingsStore } from '@/settings/settingsStore';
 import { SettingsGlyph } from '@/settings/SettingsList';
 import { syncProgress, useAuth, completeOAuthRedirect } from '@/auth';
 import { useRevenueCatIdentity } from '@/entitlements/useRevenueCatIdentity';
-import { stopBed, primeAudio, setBedVolume } from '@/audio';
+import { primeAudio, setBedVolume, pauseBed, resumeBed } from '@/audio';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { theme } from '@/ui/theme';
@@ -308,10 +308,17 @@ export default function RootLayout() {
     const sub = AppState.addEventListener('change', (next) => {
       if (next === 'background' || next === 'inactive') {
         void syncProgress();
-        // The session is configured not to play in the background, but an
-        // explicit stop also frees the decoded loop rather than leaving it
-        // resident for however long the OS keeps the process alive.
-        stopBed();
+        /*
+         * Standby, not stop. 'inactive' is iOS showing the app switcher, which
+         * the player counts as closing the app, so it pauses there too. This
+         * used to call stopBed() -- which, through remove(), never actually
+         * stopped anything, and also forgot the track, so even a working stop
+         * would have come back to silence. Swiping the app away kills the
+         * process and the loop with it; nothing is needed for that.
+         */
+        pauseBed();
+      } else if (next === 'active') {
+        resumeBed();
       }
     });
     return () => sub.remove();
