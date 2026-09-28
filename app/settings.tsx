@@ -10,6 +10,7 @@ import { render } from '@/i18n/message';
 import { useSettingsStore } from '@/settings/settingsStore';
 import { clearAllProgress, hydrateSettings } from '@/settings/persistence';
 import { feedback } from '@/settings/feedback';
+import { previewBedVolume } from '@/audio';
 import { VolumeSlider } from '@/settings/VolumeSlider';
 import {
   ActionRow,
@@ -273,6 +274,19 @@ export default function SettingsScreen() {
             <VolumeSlider
               volume={settings.soundVolume}
               disabled={!settings.soundEnabled}
+              /*
+               * Live, while dragging: the music already playing follows the
+               * finger. Not saved -- only the release is -- so a drag costs no
+               * storage writes. This is what makes the control audibly DO
+               * something before the finger lifts.
+               */
+              onPreview={(soundVolume) =>
+                previewBedVolume({
+                  soundEnabled: settings.soundEnabled,
+                  soundVolume,
+                  reduceMotion: settings.reduceMotion,
+                })
+              }
               onChange={(soundVolume) => {
                 update({ soundVolume });
                 feedback.selection();

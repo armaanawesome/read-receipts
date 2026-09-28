@@ -60,6 +60,19 @@ export function MessageList({ thread, characters, onPressClaims }: Props) {
 
   const initialCount = thread.messages.filter((m) => readMessageIds.includes(m.id)).length;
   const [shown, setShown] = useState(Math.max(initialCount, 1));
+  /*
+   * The index the NEXT tap reveals, claimed synchronously.
+   *
+   * `advance` used to read `shown` from its closure, and a closure is only
+   * refreshed when React re-renders. Two taps landing before that re-render --
+   * a quick double-tap, or any tap on a phone busy animating the previous
+   * bubble -- both read the same `shown`: that message's tone played twice, the
+   * screen still moved on by two, and the NEXT message arrived in silence. That
+   * silent message was as likely as not a clue, whose tone is the one that has
+   * to be heard. A ref claimed on the tap itself cannot be read twice.
+   */
+  const nextRef = useRef(shown);
+  nextRef.current = shown;
   const scrollRef = useRef<ScrollView>(null);
   /**
    * A ref, not state, and deliberately so twice over: it is read inside
@@ -95,7 +108,11 @@ export function MessageList({ thread, characters, onPressClaims }: Props) {
      * Read before the update rather than inside it: a state updater can be
      * invoked more than once for a single call, and a cue is a side effect.
      */
-    const revealed = thread.messages[shown];
+    const i = nextRef.current;
+    if (i >= thread.messages.length) return;
+    nextRef.current = i + 1;
+
+    const revealed = thread.messages[i];
     if (revealed && revealed.senderId !== PLAYER_ID) {
       /*
        * Two tones, and the split is the same one the bubble already draws.
@@ -109,8 +126,8 @@ export function MessageList({ thread, characters, onPressClaims }: Props) {
       const carriesClaim = (revealed.claims?.length ?? 0) > 0;
       feedback.cue(carriesClaim ? 'messageClaim' : 'message');
     }
-    setShown((n) => Math.min(n + 1, thread.messages.length));
-  }, [shown, thread.messages]);
+    setShown(i + 1);
+  }, [thread.messages]);
 
   const skipAll = useCallback(() => {
     setShown(thread.messages.length);

@@ -524,6 +524,23 @@ export default function SignInScreen() {
                 accessibilityLiveRegion="polite"
               >
                 <Text style={styles.problemText}>{render(formError, t)}</Text>
+                {/*
+                  The server being unreachable is not something the player can
+                  fix by retyping a password, so the message says so and this
+                  hands them the way forward. Before, the error sat on the form
+                  with nothing under it, and the only way out was the small
+                  keep-playing link -- which dropped them into the game with no
+                  word that they were now a guest.
+                */}
+                {formError.raw === undefined && formError.key === 'auth.error.network' ? (
+                  <Pressable
+                    onPress={leave}
+                    accessibilityRole="button"
+                    style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.ctaText}>{t('signIn.playAsGuestNow')}</Text>
+                  </Pressable>
+                ) : null}
               </View>
             ) : null}
 

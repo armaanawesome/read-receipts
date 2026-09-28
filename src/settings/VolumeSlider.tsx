@@ -39,10 +39,19 @@ const ROW_HEIGHT = theme.hit.min;
 export function VolumeSlider({
   volume,
   onChange,
+  onPreview,
   disabled,
 }: {
   volume: number;
   onChange: (next: number) => void;
+  /**
+   * Called on every move while a finger is down, with the position under it.
+   * NOT persisted -- `onChange` still commits once, on release, for the reason
+   * above. This exists so the player HEARS the level change as they drag,
+   * which is how anybody judges a volume control. A slider that only acts on
+   * release and gives no audible sign until then reads as one that does nothing.
+   */
+  onPreview?: (next: number) => void;
   disabled: boolean;
 }) {
   const t = useTranslator();
@@ -56,8 +65,8 @@ export function VolumeSlider({
    * would present as a slider that works until the screen re-renders and then
    * silently computes against a width of zero.
    */
-  const latest = useRef({ trackWidth, onChange, disabled, volume });
-  latest.current = { trackWidth, onChange, disabled, volume };
+  const latest = useRef({ trackWidth, onChange, onPreview, disabled, volume });
+  latest.current = { trackWidth, onChange, onPreview, disabled, volume };
 
   /**
    * The track's left edge in window coordinates.
@@ -107,9 +116,15 @@ export function VolumeSlider({
           // scrolls, and a view that was measured before it settled would
           // otherwise carry a stale origin for the whole drag.
           measure();
-          setDragging(valueAt(g.x0));
+          const start = valueAt(g.x0);
+          setDragging(start);
+          latest.current.onPreview?.(start);
         },
-        onPanResponderMove: (_e, g) => setDragging(valueAt(g.moveX)),
+        onPanResponderMove: (_e, g) => {
+          const next = valueAt(g.moveX);
+          setDragging(next);
+          latest.current.onPreview?.(next);
+        },
         onPanResponderRelease: (_e, g) => {
           // `moveX` is 0 for a tap that never moved, so fall back to where the
           // touch started rather than committing the far left of the track.
@@ -118,8 +133,12 @@ export function VolumeSlider({
           latest.current.onChange(next);
         },
         // A cancelled gesture — a call arriving, a parent claiming the responder
-        // — must not leave the thumb parked somewhere the player never chose.
-        onPanResponderTerminate: () => setDragging(null),
+        // — must not leave the thumb parked somewhere the player never chose,
+        // nor the music playing at a level that was never committed.
+        onPanResponderTerminate: () => {
+          setDragging(null);
+          latest.current.onPreview?.(latest.current.volume);
+        },
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],

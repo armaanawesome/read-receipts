@@ -161,8 +161,9 @@ export const EN = {
   'auth.error.alreadyRegistered': 'That email already has an account. Sign in instead.',
   'auth.error.passwordShort': 'That password is too short. Use at least 6 characters.',
   'auth.error.rateLimit': 'Too many attempts. Wait a minute and try again.',
-  'auth.error.network':
-    'Could not reach the server. Check your connection and try again — your progress is safe on this device.',
+  'auth.error.network': 'The server is having a problem right now, so accounts are unavailable. Play as a guest for now — your progress is safe on this device, and you can sign in later to carry it to your other devices.',
+
+
   'auth.error.badEmail': 'That does not look like an email address. Check it and try again.',
   'sync.notSignedIn': 'Not signed in. Your progress is saved on this device.',
   'sync.upToDate': 'Everything was already in sync.',
@@ -373,7 +374,8 @@ export const EN = {
   'signIn.age.under': 'I am under 13',
   'signIn.age.blocked': 'Accounts are for players aged 13 and over. The game plays in full without one, and your progress is saved on this device.',
   'signIn.age.backToGame': 'Back to the cases',
-  'signIn.terms': 'You must be 13 or over to create an account. Creating one means you accept the terms and the privacy policy. Tap to read them.',
+  'signIn.terms': 'You must be 13 or over to create an account. Creating one means you accept the terms and the privacy policy. Tap to read them.',  'signIn.playAsGuestNow': 'Play as guest for now',
+
   'signIn.heading': 'Take your case notes with you',
   'signIn.why': 'An account carries your progress to another phone.',
   'signIn.createAccount': 'Create account',
@@ -631,8 +633,9 @@ const ES: Catalogue = {
   'auth.error.alreadyRegistered': 'Ese correo ya tiene una cuenta. Inicia sesión.',
   'auth.error.passwordShort': 'Esa contraseña es demasiado corta. Usa al menos 6 caracteres.',
   'auth.error.rateLimit': 'Demasiados intentos. Espera un minuto y vuelve a probar.',
-  'auth.error.network':
-    'No se ha podido conectar con el servidor. Revisa tu conexión y vuelve a probar — tu progreso está a salvo en este dispositivo.',
+  'auth.error.network': 'El servidor tiene un problema ahora mismo, así que las cuentas no están disponibles. Juega como invitado por ahora: tu progreso está a salvo en este dispositivo y podrás iniciar sesión más tarde para llevarlo a tus otros dispositivos.',
+
+
   'auth.error.badEmail': 'Eso no parece una dirección de correo. Revísala y vuelve a probar.',
   'sync.notSignedIn': 'No has iniciado sesión. Tu progreso se guarda en este dispositivo.',
   'sync.upToDate': 'Ya estaba todo sincronizado.',
@@ -798,7 +801,8 @@ const ES: Catalogue = {
   'signIn.age.under': 'Tengo menos de 13 años',
   'signIn.age.blocked': 'Las cuentas son para jugadores de 13 años o más. El juego se puede jugar entero sin cuenta, y tu progreso se guarda en este dispositivo.',
   'signIn.age.backToGame': 'Volver a los casos',
-  'signIn.terms': 'Debes tener 13 años o más para crear una cuenta. Al crearla aceptas los términos y la política de privacidad. Toca para leerlos.',
+  'signIn.terms': 'Debes tener 13 años o más para crear una cuenta. Al crearla aceptas los términos y la política de privacidad. Toca para leerlos.',  'signIn.playAsGuestNow': 'Jugar como invitado por ahora',
+
   'signIn.heading': 'Lleva tus notas del caso contigo',
   'signIn.why': 'Una cuenta lleva tu progreso a otro teléfono.',
   'signIn.createAccount': 'Crear cuenta',
@@ -1010,8 +1014,9 @@ const FR: Catalogue = {
   'auth.error.alreadyRegistered': 'Cet e-mail a déjà un compte. Connecte-toi.',
   'auth.error.passwordShort': 'Ce mot de passe est trop court. Utilise au moins 6 caractères.',
   'auth.error.rateLimit': 'Trop de tentatives. Attends une minute et réessaie.',
-  'auth.error.network':
-    'Impossible de joindre le serveur. Vérifie ta connexion et réessaie — ta progression est en sécurité sur cet appareil.',
+  'auth.error.network': 'Le serveur rencontre un problème en ce moment, les comptes sont donc indisponibles. Joue en invité pour l’instant : ta progression est en sécurité sur cet appareil, et tu pourras te connecter plus tard pour la retrouver sur tes autres appareils.',
+
+
   'auth.error.badEmail': 'Cela ne ressemble pas à une adresse e-mail. Vérifie-la et réessaie.',
   // "Aucun compte connecté", not "Tu n'es pas connecté" — the participle would
   // agree with the player, who has no gender. Same rule as the case packs.
@@ -1181,7 +1186,8 @@ const FR: Catalogue = {
   'signIn.age.under': 'J’ai moins de 13 ans',
   'signIn.age.blocked': 'Les comptes sont réservés aux joueurs de 13 ans et plus. Le jeu se joue entièrement sans compte, et votre progression est enregistrée sur cet appareil.',
   'signIn.age.backToGame': 'Retour aux affaires',
-  'signIn.terms': 'Vous devez avoir 13 ans ou plus pour créer un compte. Le créer vaut acceptation des conditions et de la politique de confidentialité. Touchez pour les lire.',
+  'signIn.terms': 'Vous devez avoir 13 ans ou plus pour créer un compte. Le créer vaut acceptation des conditions et de la politique de confidentialité. Touchez pour les lire.',  'signIn.playAsGuestNow': 'Jouer en invité pour l’instant',
+
   'signIn.heading': 'Emportez vos notes d’enquête',
   'signIn.why': 'Un compte transfère votre progression sur un autre téléphone.',
   'signIn.createAccount': 'Créer un compte',
@@ -1391,8 +1397,9 @@ const DE: Catalogue = {
   'auth.error.alreadyRegistered': 'Für diese E-Mail gibt es schon ein Konto. Melde dich an.',
   'auth.error.passwordShort': 'Dieses Passwort ist zu kurz. Nimm mindestens 6 Zeichen.',
   'auth.error.rateLimit': 'Zu viele Versuche. Warte eine Minute und versuch es noch einmal.',
-  'auth.error.network':
-    'Der Server war nicht erreichbar. Prüf deine Verbindung und versuch es noch einmal — dein Fortschritt ist auf diesem Gerät sicher.',
+  'auth.error.network': 'Der Server hat gerade ein Problem, deshalb sind Konten nicht verfügbar. Spiel vorerst als Gast – dein Fortschritt ist auf diesem Gerät sicher, und du kannst dich später anmelden, um ihn auf deine anderen Geräte mitzunehmen.',
+
+
   'auth.error.badEmail': 'Das sieht nicht nach einer E-Mail-Adresse aus. Prüf sie und versuch es noch einmal.',
   'sync.notSignedIn': 'Kein Konto angemeldet. Dein Fortschritt wird auf diesem Gerät gespeichert.',
   'sync.upToDate': 'Es war schon alles synchron.',
@@ -1558,7 +1565,8 @@ const DE: Catalogue = {
   'signIn.age.under': 'Ich bin unter 13',
   'signIn.age.blocked': 'Konten sind für Spielerinnen und Spieler ab 13. Das Spiel lässt sich ohne Konto vollständig spielen, und dein Fortschritt bleibt auf diesem Gerät.',
   'signIn.age.backToGame': 'Zurück zu den Fällen',
-  'signIn.terms': 'Du musst 13 oder älter sein, um ein Konto anzulegen. Damit akzeptierst du die Nutzungsbedingungen und die Datenschutzerklärung. Zum Lesen tippen.',
+  'signIn.terms': 'Du musst 13 oder älter sein, um ein Konto anzulegen. Damit akzeptierst du die Nutzungsbedingungen und die Datenschutzerklärung. Zum Lesen tippen.',  'signIn.playAsGuestNow': 'Vorerst als Gast spielen',
+
   'signIn.heading': 'Nimm deine Ermittlungsnotizen mit',
   'signIn.why': 'Ein Konto überträgt deinen Fortschritt auf ein anderes Telefon.',
   'signIn.createAccount': 'Konto erstellen',
@@ -1763,8 +1771,9 @@ const PT_BR: Catalogue = {
   'auth.error.alreadyRegistered': 'Esse e-mail já tem uma conta. Entre nela.',
   'auth.error.passwordShort': 'Essa senha é curta demais. Use pelo menos 6 caracteres.',
   'auth.error.rateLimit': 'Tentativas demais. Espere um minuto e tente de novo.',
-  'auth.error.network':
-    'Não deu para falar com o servidor. Confira sua conexão e tente de novo — seu progresso está seguro neste aparelho.',
+  'auth.error.network': 'O servidor está com um problema agora, então as contas estão indisponíveis. Jogue como convidado por enquanto — seu progresso está seguro neste aparelho, e você pode entrar depois para levá-lo aos seus outros aparelhos.',
+
+
   'auth.error.badEmail': 'Isso não parece um endereço de e-mail. Confira e tente de novo.',
   // "Nenhuma conta conectada", not "Você não está conectado" — the participle
   // would agree with the player, who has no gender.
@@ -1932,7 +1941,8 @@ const PT_BR: Catalogue = {
   'signIn.age.under': 'Tenho menos de 13 anos',
   'signIn.age.blocked': 'As contas são para jogadores de 13 anos ou mais. Dá para jogar tudo sem conta, e seu progresso fica salvo neste aparelho.',
   'signIn.age.backToGame': 'Voltar aos casos',
-  'signIn.terms': 'Você precisa ter 13 anos ou mais para criar uma conta. Ao criar, você aceita os termos e a política de privacidade. Toque para ler.',
+  'signIn.terms': 'Você precisa ter 13 anos ou mais para criar uma conta. Ao criar, você aceita os termos e a política de privacidade. Toque para ler.',  'signIn.playAsGuestNow': 'Jogar como convidado por enquanto',
+
   'signIn.heading': 'Leve suas anotações com você',
   'signIn.why': 'Uma conta leva seu progresso para outro celular.',
   'signIn.createAccount': 'Criar conta',

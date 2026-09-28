@@ -34,6 +34,18 @@ let current: string | null = null;
  * thing that knew the track id went with it.
  */
 let desired: string | null = null;
+/**
+ * The most recent settings anybody passed in.
+ *
+ * Read when a cold-started bed finally gets its player, rather than the volume
+ * captured when it was queued. On a cold launch the bed is requested before
+ * `hydrateSettings()` has read storage, so the captured volume is the DEFAULT --
+ * and by the time the audio session is configured the real, saved volume has
+ * already arrived and been thrown away, because `player` was still null and
+ * the fast path had nothing to set it on. A returning player who turned the
+ * music down heard it start loud.
+ */
+let latestPrefs: VolumePrefs | null = null;
 
 /**
  * Play `trackId` on a loop, or stop everything when it is null.
@@ -69,7 +81,22 @@ export function setBedVolume(prefs: VolumePrefs): void {
   apply(prefs);
 }
 
+/**
+ * The level while the volume slider is still under a finger.
+ *
+ * Deliberately NOT `apply()`. A drag streams values, and any one of them can be
+ * exactly zero -- a touch at the left end of the track. Through `apply()` that
+ * zero RELEASED the player and the next non-zero frame built a new one, so
+ * raising the volume from near-mute restarted the lobby loop from 0:00 halfway
+ * through the gesture. A preview only turns up or down a player that already
+ * exists; creating or releasing one waits for the committed value on release.
+ */
+export function previewBedVolume(prefs: VolumePrefs): void {
+  if (player) player.volume = resolveBedVolume(prefs);
+}
+
 function apply(prefs: VolumePrefs): void {
+  latestPrefs = prefs;
   const trackId = desired;
   const volume = resolveBedVolume(prefs);
 
@@ -124,7 +151,14 @@ function apply(prefs: VolumePrefs): void {
    */
   void primeAudio().then(() => {
     // A different screen may have taken the slot while we waited.
-    if (current === trackId) startBed(trackId, source, volume);
+    if (current !== trackId) return;
+    // Re-resolve NOW. `volume` above is from before settings hydrated.
+    const now = resolveBedVolume(latestPrefs ?? prefs);
+    if (now <= 0) {
+      release();
+      return;
+    }
+    startBed(trackId, source, now);
   });
 }
 

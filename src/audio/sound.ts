@@ -133,38 +133,38 @@ function start(id: CueId, source: number, volume: number): void {
     }));
     player.volume = volume;
     /*
-     * Rewind, THEN play — and play on both outcomes of the rewind.
+     * ALWAYS rewind, then play. Never branch on `player.isLoaded`.
      *
-     * Two bugs have lived on these four lines, and the fix for each one caused
-     * the other. Getting it right means refusing both, not picking a side.
+     * This is the bug behind every "the text tone is not working" report, and
+     * the reason three rounds of fixes to these lines never reached it. The old
+     * guard was `if (player.isLoaded && player.currentTime > 0) rewind`.
      *
-     * It was `seekTo(0).then(play).catch(() => {})`. That makes playback
-     * conditional on a promise that can reject — seeking a player that has not
-     * finished loading fails — and the empty catch swallowed the error AND the
-     * sound.
+     * expo-audio's Android `isLoaded` property is `playbackState == STATE_READY`
+     * (node_modules/expo-audio/android/.../AudioModule.kt). A cue that has
+     * finished playing is in STATE_ENDED, not STATE_READY, so on every REPLAY
+     * `isLoaded` read false, the rewind was skipped, and `play()` was handed a
+     * player parked at the end of its clip. A finished ExoPlayer plays nothing.
+     * Every cue therefore sounded exactly once per launch and was silent for the
+     * rest of it. The status EVENT special-cases ENDED as loaded, which is why
+     * it looked fine in logs; the property JS actually reads does not.
      *
-     * So it became a fire-and-forget seek with an unconditional synchronous
-     * `play()` after it. That fixed the swallowing and broke the replay. One
-     * player is created per cue and reused, so once a cue has finished its
-     * `currentTime` sits at the END of the clip; calling `play()` there does
-     * nothing at all on AVPlayer or ExoPlayer, and the abandoned seek only
-     * landed in time for the tap AFTER the next one. The result was a text tone
-     * that alternated — played, silent, played, silent — which is reported, three
-     * times over, as "the text tone is not working".
+     * Seeking to 0 is harmless on a fresh player -- it records the position --
+     * and required on a finished one, so there is nothing to branch on at all.
+     * The seek runs on the main queue and resolves once applied; `play()` then
+     * follows on BOTH outcomes, so a rejected seek still makes a sound.
      *
-     * Waiting for the seek fixes the replay. Playing in BOTH branches keeps the
-     * first fix: a rejected seek still gets its sound, it just gets it from
-     * wherever the playhead happens to be, which is a far smaller defect than
-     * silence. Nothing here can swallow a cue any more.
+     * `play` is wrapped because it runs in a later microtask, outside the
+     * try/catch around this function. A throw there would otherwise be an
+     * unhandled rejection that never reaches diagnostics.
      */
-    if (player.isLoaded && player.currentTime > 0) {
-      player.seekTo(0).then(
-        () => player.play(),
-        () => player.play(),
-      );
-    } else {
-      player.play();
-    }
+    const play = (): void => {
+      try {
+        player.play();
+      } catch (e) {
+        note('failed', `cue:${id}`, describe(e));
+      }
+    };
+    player.seekTo(0).then(play, play);
     note('played', `cue:${id}`, `volume ${volume.toFixed(3)}, loaded ${String(player.isLoaded)}`);
   } catch (e) {
     // A missing codec, a released player, a device with no audio route. None of

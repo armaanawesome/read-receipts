@@ -330,6 +330,15 @@ function messageClaim() {
   }
   // A touch of air on the strike, so it reads as a bell rather than a beep.
   addNoise(buf, CUE_RATE, { start: 0, length: 0.02, gain: 0.16, cutoff: 9000, curve: 34 });
+  /*
+   * 2ms fade-in over the whole buffer. The tones already have an attack, but
+   * the noise burst at start 0 does not, so the file began on a sample of
+   * about -9200 out of 32767. Playback starts from silence, so that jump was a
+   * pop on the front of every clue tone -- the one sound that most needs to
+   * be clean.
+   */
+  const fadeIn = Math.floor(0.002 * CUE_RATE);
+  for (let i = 0; i < fadeIn; i += 1) buf[i] *= i / fadeIn;
   return buf;
 }
 
@@ -504,19 +513,42 @@ function bed(seed) {
  *  - A falling three-note figure every four bars — A, G, E. Minor, unresolved,
  *    and sparse enough that it never becomes a tune to get sick of.
  *
- * Sixteen seconds rather than eight, so the figure lands four times before it
- * repeats and the loop is not obvious.
+ * TWENTY-FOUR seconds, and the number is load-bearing. It is the shortest
+ * length both rhythms divide exactly: 20 heartbeats at 1.2s, 6 figures at 4s.
+ * It was 16, which neither divides -- 16 / 1.2 is 13.33 beats -- so the loop
+ * could never have been rhythmically seamless. Worse, it was then finished
+ * with the same crossfade-and-trim bed() uses: blend the last 0.6s into the
+ * first 0.6s and cut it off. Right for a drone, which has no rhythm to break.
+ * Wrong here. It shortened the file to 15.4s, and the blend that joined the
+ * ends FADED THE REAL DOWNBEAT OUT -- measured at half the strength of every
+ * other beat -- while pulling the 15.6s beat forward into the first 0.6s. So
+ * the loop came round early and opened on a weak, displaced beat: the rhythm
+ * stumbled every 15.4 seconds. The first device report called that 'plays for
+ * a bit then abruptly plays again', which is exactly it.
+ *
+ * So nothing is trimmed any more. The pad's partials are rounded to a whole
+ * number of cycles per loop and it breathes once per loop, so it joins itself
+ * exactly; no heartbeat or figure tail crosses the seam; and only the noise,
+ * which has no phase to preserve, is crossfaded -- inside its own buffer, so
+ * the file stays exactly MENU_LOOP long.
  *
  * Everything sits between 110 and 700Hz ON PURPOSE. Both message cues live from
  * 880Hz up, and the last round of this proved that a bed occupying a cue's band
  * masks it into a bug report — see the note on `message` in cues.ts.
  */
-const MENU_LOOP = 16;
+const MENU_LOOP = 24;
 
 function menuBed() {
   const rate = MUSIC_RATE;
   const buf = buffer(MENU_LOOP, rate);
   const n = buf.length;
+
+  /*
+   * A frequency nudged to complete a whole number of cycles in one loop, so the
+   * sample after the last one is the first one. The largest shift below is under
+   * 0.03Hz, which nobody can hear; a phase jump every 24s, everybody can.
+   */
+  const whole = (f) => Math.round(f * MENU_LOOP) / MENU_LOOP;
 
   // A minor: the pad. Low, quiet, and slowly breathing.
   const PAD = [
@@ -524,22 +556,29 @@ function menuBed() {
     { f: 261.63, g: 0.15 },
     { f: 329.63, g: 0.12 },
     { f: 440.0, g: 0.07 },
-  ];
+  ].map(({ f, g }) => ({ f: whole(f), fd: whole(f * 1.003), g }));
+
+  // One breath per loop, so the swell ends exactly where it began.
+  const BREATH = 1 / MENU_LOOP;
+
   for (let i = 0; i < n; i += 1) {
     const t = i / rate;
-    const breath = Math.sin(2 * Math.PI * 0.055 * t) * 0.5 + 0.5;
+    const breath = Math.sin(2 * Math.PI * BREATH * t) * 0.5 + 0.5;
     let v = 0;
-    for (const { f, g } of PAD) {
+    for (const { f, fd, g } of PAD) {
       // A few cents of detune per partial keeps the pad from sounding like a
-      // held organ chord.
+      // held organ chord. Both partials are whole-cycle, so the beating between
+      // them also repeats exactly on the loop.
       v += Math.sin(2 * Math.PI * f * t) * g;
-      v += Math.sin(2 * Math.PI * f * 1.003 * t) * g * 0.6;
+      v += Math.sin(2 * Math.PI * fd * t) * g * 0.6;
     }
     buf[i] = v * (0.55 + 0.45 * breath) * 0.5;
   }
 
   // The heartbeat. Two thumps a fifth of a second apart, then a long wait.
-  for (let beat = 0; beat * 1.2 < MENU_LOOP; beat += 1) {
+  // 20 beats in 24s; the last tail ends at 23.22s, so none crosses the seam.
+  const BEATS = Math.round(MENU_LOOP / 1.2);
+  for (let beat = 0; beat < BEATS; beat += 1) {
     const at = beat * 1.2;
     for (const [off, gain] of [
       [0, 0.5],
@@ -564,9 +603,11 @@ function menuBed() {
     }
   }
 
-  // The figure: A - G - E, falling, once every four seconds.
+  // The figure: A - G - E, falling, once every four seconds. 6 in 24s; the last
+  // one's tail ends at 22.74s.
   const FIGURE = [440.0, 392.0, 329.63];
-  for (let phrase = 0; phrase * 4 < MENU_LOOP; phrase += 1) {
+  const PHRASES = Math.round(MENU_LOOP / 4);
+  for (let phrase = 0; phrase < PHRASES; phrase += 1) {
     FIGURE.forEach((f, k) => {
       addTone(buf, rate, {
         freq: f,
@@ -580,20 +621,27 @@ function menuBed() {
     });
   }
 
-  // Air, at the same corner the case beds use.
+  /*
+   * Air, at the same corner the case beds use -- and the only layer that is
+   * crossfaded. Noise has no phase to keep, so it is generated a little LONGER
+   * than the loop, its overhang is blended into its own start, and exactly one
+   * loop's worth is kept. The file does not get shorter, which is the mistake
+   * the old version made.
+   */
+  const fade = Math.floor(0.5 * rate);
+  const air = new Float32Array(n + fade);
   let last = 0;
-  for (let i = 0; i < n; i += 1) {
+  for (let i = 0; i < air.length; i += 1) {
     last += 0.22 * (Math.random() * 2 - 1 - last);
-    buf[i] += last * 0.045;
+    air[i] = last * 0.045;
   }
-
-  // Seamless, the same way bed() is.
-  const fade = Math.floor(0.6 * rate);
   for (let i = 0; i < fade; i += 1) {
     const k = i / fade;
-    buf[i] = buf[i] * k + buf[n - fade + i] * (1 - k);
+    air[i] = air[i] * k + air[n + i] * (1 - k);
   }
-  return normalise(buf.subarray(0, n - fade), 0.85);
+  for (let i = 0; i < n; i += 1) buf[i] += air[i];
+
+  return normalise(buf, 0.85);
 }
 
 /* ------------------------------------------------------------------ main -- */

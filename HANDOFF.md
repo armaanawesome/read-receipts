@@ -1665,6 +1665,65 @@ blobs — which is also the privacy policy URL Google Play accepts.
 **Still unverified:** device layout for all of it, and the OAuth round trip
 itself, which cannot be tested without the dashboard configured.
 
+### Five device reports, and why three rounds of fixes missed them -- 2026-09-29
+
+Reported from an Android handset. Every one had already been "fixed" at least
+once, in JavaScript, and survived. The causes were all one layer down.
+
+**1. Text tones played once per launch, then never again.** expo-audio's
+Android `isLoaded` PROPERTY is `playbackState == STATE_READY`
+(`node_modules/expo-audio/android/.../AudioModule.kt`). A cue that has
+finished is `STATE_ENDED`, so `isLoaded` is FALSE on every replay. `sound.ts`
+gated its rewind on `player.isLoaded && player.currentTime > 0`, skipped it,
+and called `play()` on a finished ExoPlayer -- which plays nothing. The status
+EVENT special-cases ENDED as loaded, which is why logs looked healthy. Fix:
+always `seekTo(0).then(play, play)`; never branch on `isLoaded`. **Do not
+reintroduce an `isLoaded` guard on the replay path.**
+
+**2. Normal vs clue tones.** Already distinct (`message` falling, `messageClaim`
+rising C6-E6-G6) -- inaudible only because of #1. The clue tone also started
+on sample -9186, a pop on every play; it now fades in over 2ms.
+
+**3. The volume slider "did nothing".** Its only audible confirmation was the
+`pin` preview on release, which #1 silenced after the first time. It also only
+acted on release. It now drives the playing bed LIVE via `onPreview` ->
+`previewBedVolume` while dragging, and still persists once on release. NOT
+`setBedVolume`: a drag touching zero went through `apply()`, released the
+player, and the next frame rebuilt it -- the loop restarted from 0:00 mid-drag
+(caught by ecc:typescript-reviewer before ship). The preview only turns a live
+player; a cancelled drag snaps back to the saved level. Separately,
+`music.ts` had a cold-start race: the bed's first volume was captured before
+settings hydrated, so a returning player who turned it down heard it start
+loud. It now re-resolves from the latest settings when the session is ready.
+
+**4. The lobby music "plays for a bit then abruptly plays again".**
+`menuBed()` built a 16s buffer then crossfaded-and-trimmed it to 15.4s, the
+trick `bed()` uses for drones. The lobby bed has RHYTHM: the trim faded the
+real downbeat to half strength (measured) and brought the loop round early, and
+16s is not a multiple of the 1.2s heartbeat anyway. Now 24s -- exactly 20
+heartbeats and 6 figures -- pad partials rounded to whole cycles, only the
+noise crossfaded and within its own buffer.
+
+**5. Sign-in: "server issue", then dropped into the game unexplained.** The
+error now says the server is down, that progress is safe on the device, and
+that they can sign in later -- with a "Play as guest for now" button right in
+the error block.
+
+**THE SERVER ITSELF IS DOWN, AND CODE CANNOT FIX IT.** The Supabase project
+host does not resolve at all -- `Non-existent domain` from Google 8.8.8.8 and
+Cloudflare 1.1.1.1, while `supabase.com` resolves fine from the same machine.
+The EAS `preview` env points at that same dead host. Most likely the free-tier
+project was paused for inactivity, or deleted. Owner action, in the dashboard:
+if paused, **Restore project**; if gone, create one, re-run
+`supabase/migrations/0001_case_progress.sql`, and update
+`EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` in BOTH `.env`
+and the EAS `preview` environment, then rebuild. Until then every account
+feature -- sign-in, sync, delete-account, Google/Apple -- fails.
+
+All five are locked by `src/audio/deviceReports.test.ts`, and each of its
+assertions was checked against the OLD files and would have failed on them.
+A test that cannot fail proves nothing.
+
 ### Already established, do not redo
 
 - `src/ui/theme.ts` — tokens, motion durations, the length-proportional typing
