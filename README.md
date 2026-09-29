@@ -10,12 +10,16 @@ your vibes.
 
 Built for the **RevenueCat Shipaton 2026, Next Gen award**.
 
-<!--
-  PLACEHOLDER: animated GIF of the COMPARE interaction (~10s loop).
-  Pin two claims on the evidence board, tap COMPARE, watch the connector line
-  and the revelation type out. Task 18 in HANDOFF.md. Not recorded yet.
--->
-> `[ GIF: the COMPARE interaction (not recorded yet) ]`
+**[Watch the demo (1:39)](https://www.youtube.com/watch?v=LSWoNmcMtik)** ·
+**[Download the Android and iOS builds](https://github.com/armaanawesome/read-receipts/releases/latest)**
+
+<p>
+  <img src="assets/screenshots/1-landing.jpg" width="160" alt="Landing screen">
+  <img src="assets/screenshots/2-chat.jpg" width="160" alt="A group chat, with the messages that carry a claim edged in amber">
+  <img src="assets/screenshots/3-board.jpg" width="160" alt="The evidence board: two statements plotted against one clock">
+  <img src="assets/screenshots/4-paywall.jpg" width="160" alt="The paywall: this case, or all twelve">
+  <img src="assets/screenshots/5-case-closed.jpg" width="160" alt="Case closed">
+</p>
 
 ---
 
@@ -196,8 +200,8 @@ versions.
 
 ```
 ./check.cmd
- Test Files  141 passed (141)
-      Tests  4951 passed (4951)
+ Test Files  142 passed (142)
+      Tests  5010 passed (5010)
 ```
 
 Coverage on the engine and state layers (`src/engine/`, `src/state/`) is
@@ -270,14 +274,21 @@ That is a Release build: standalone, no Metro, and it opens the four free cases.
 purchase flow, and it needs Metro running. Both are explained in
 [`docs/BUILDING.md`](docs/BUILDING.md).
 
-EAS artifact links are tied to a specific build and do not stay valid forever,
-so the APK for the submission is attached to the Devpost entry rather than
-linked from here.
+Ready-made builds of the submitted commit are on the
+[Releases page](https://github.com/armaanawesome/read-receipts/releases/latest), because EAS artifact links expire:
+
+| File | What it is |
+|---|---|
+| `ReadReceipts-android.apk` | Android, Release. Install and play the tutorial and three free cases. |
+| `ReadReceipts-ios-simulator.tar.gz` | iOS Simulator, Release. Unpack and drag `ReadReceipts.app` onto a booted simulator. |
+| `ReadReceipts-ios-simulator-purchase-demo.tar.gz` | iOS Simulator, Debug. The Test Store purchase; loads its JavaScript from Metro (`npx expo start --dev-client`). |
+
+The Release builds have purchases switched off on purpose: a RevenueCat Test
+Store key only runs in a Debug build.
 
 ## Screenshots
 
-<!-- PLACEHOLDER: 5 screenshots at 1179×2556, no device frame (Devpost requirement). Not captured yet. -->
-`[ Screenshots: not captured yet ]`
+Full size, 1179×2556, in [`assets/screenshots/`](assets/screenshots/).
 
 ## Tech stack
 
