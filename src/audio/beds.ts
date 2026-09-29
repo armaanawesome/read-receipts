@@ -2,18 +2,18 @@
  * The looping background beds: one for the menu, one per case.
  *
  * Every file is SYNTHESISED by `tools/make-audio.mjs`, like the cues, so none of
- * them carries a licence question. Each is an eight-second seamless loop at
- * 16kHz mono, about 234KB — the whole set is under 4MB, which is what makes
- * seventeen of them affordable at all.
+ * them carries a licence question. 16kHz mono: the lobby is a 24s loop, each
+ * case a 16s one (500KB), about 8.8MB for the set.
  *
- * ## Why a bed and not a score
+ * ## Composed, not droned
  *
- * These are drones, deliberately, and the honest word for them is atmosphere
- * rather than music. A tune under a game whose whole activity is *reading* is a
- * tune the player mutes within ten minutes; a low room tone is something they
- * stop noticing and then miss when it stops. They vary only by root note and
- * swell rate, which is enough for two cases to feel like different rooms and not
- * enough for any of them to have a hook to get sick of.
+ * The cases used to get a drone -- room tone, eight seconds, trimmed to 7.5 --
+ * and on a handset it read as "the same old static noise". They now share the
+ * lobby's language (a minor pad, a slow pulse, a short figure) without its
+ * tune: a pad that moves between two chords, a single pulse every two seconds
+ * rather than a heartbeat, and a figure whose key and shape come from the case
+ * id. Quiet enough to read over, and it goes somewhere. Every file is exactly
+ * one loop with nothing trimmed; `deviceReports.test.ts` checks each one.
  */
 
 /**

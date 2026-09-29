@@ -1754,6 +1754,19 @@ silence. Killing the app kills the loop with the process.
 104dp of nothing under "Run the check" on a 3-button-nav phone. Android now
 gets 0; iOS is unchanged -- both earlier clearance reports were iPhones.
 
+### Case music rebuilt -- 2026-09-30
+
+Report: in-case music was "the same old static noise". It was `bed()`: an 8s
+drone trimmed to 7.5s by the same crossfade that broke the lobby, and 6-7dB
+louder than the lobby as a constant wall (RMS -9.4 vs -16.1). Replaced by
+`caseBed()` in `tools/make-audio.mjs`: 16s composed loop per case -- minor pad
+moving i -> VI -> i once per loop, one soft pulse every 2s, a rising/falling
+figure every 8s; key and figure shape from the case id (10 distinct combos over
+16 cases). Measured: every file exactly 16.0s, seam under p99, RMS -15 to -17
+(level with the lobby), under 0.25% energy above 880Hz. Built TDD: the length
+test failed on all 16 old files first. Re-running the generator re-randomises
+the cues and the lobby's air -- `git checkout` those back if only beds changed.
+
 All five are locked by `src/audio/deviceReports.test.ts`, and each of its
 assertions was checked against the OLD files and would have failed on them.
 A test that cannot fail proves nothing.

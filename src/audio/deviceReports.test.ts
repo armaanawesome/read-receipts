@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describeAuthError } from '../auth/session';
 
@@ -145,6 +145,46 @@ describe('the lobby music loops without a stumble', () => {
     const p99 = steps[Math.floor(steps.length * 0.99)] ?? 0;
     const seam = Math.abs((samples[0] ?? 0) - (samples[samples.length - 1] ?? 0));
     expect(seam).toBeLessThanOrEqual(p99);
+  });
+});
+
+describe('the music inside a case flows instead of stumbling', () => {
+  /*
+   * The case beds were 8s drones with a hiss layer, crossfaded head-to-tail and
+   * TRIMMED to 7.5s -- the same finish that made the lobby stumble. The report
+   * on the handset: "the same old static noise". They are composed now, in the
+   * lobby's language but not its tune, and held to the lobby's loop rules.
+   */
+  const CASE_LOOP = 16; // 8 pulses of 2s, 2 figures of 8s, one chord change.
+  const beds = readdirSync(join(ROOT, 'assets/audio'))
+    .filter((f) => f.startsWith('bed-') && f !== 'bed-menu.wav');
+
+  it('covers every case track', () => {
+    // Every case in content/cases, tutorial included. bed-menu is the lobby.
+    expect(beds.length).toBe(16);
+  });
+
+  it.each(beds)('%s is exactly one loop long -- nothing trimmed', (file) => {
+    const { rate, samples } = wav(`assets/audio/${file}`);
+    expect(samples.length).toBe(CASE_LOOP * rate);
+  });
+
+  it.each(beds)('%s joins itself without a step at the seam', (file) => {
+    const { samples } = wav(`assets/audio/${file}`);
+    const steps: number[] = [];
+    for (let k = 0; k < samples.length - 1; k += 1) {
+      steps.push(Math.abs((samples[k + 1] ?? 0) - (samples[k] ?? 0)));
+    }
+    steps.sort((a, b) => a - b);
+    const p99 = steps[Math.floor(steps.length * 0.99)] ?? 0;
+    const seam = Math.abs((samples[0] ?? 0) - (samples[samples.length - 1] ?? 0));
+    expect(seam).toBeLessThanOrEqual(p99);
+  });
+
+  it('is not the lobby track', () => {
+    const menu = wav('assets/audio/bed-menu.wav');
+    const first = wav(`assets/audio/${beds[0]}`);
+    expect(first.samples.length / first.rate).not.toBe(menu.samples.length / menu.rate);
   });
 });
 

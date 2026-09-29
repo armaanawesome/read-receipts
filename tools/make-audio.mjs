@@ -367,129 +367,148 @@ function tap() {
 /* ----------------------------------------------------------------- music -- */
 
 const MUSIC_RATE = 16000;
-/** Eight seconds. A drone is near-stationary, so a short loop is not a short cue. */
-const LOOP = 8;
 
 /**
- * An ambient bed, seeded by name.
+ * The music inside a case: composed, in the lobby's language, never its tune.
  *
- * Not a composition, and it should not pretend to be one: two detuned low
- * oscillators, a fifth above them, and a slow noise swell. What varies per case
- * is the root note and the rate of that swell, which is enough for two cases to
- * feel like different rooms without any of them having a tune to get sick of.
+ * ## Why this replaced the drone
  *
- * The last half second crossfades into the first, so the loop has no seam. A
- * drone that clicks once every eight seconds is worse than no drone at all.
+ * Every case used to get `bed()`: two detuned oscillators, a stack of partials
+ * and a hiss layer, 8 seconds, then the last half second crossfaded over the
+ * first and TRIMMED off -- the exact finish that made the lobby stumble. On a
+ * handset it read as "the same old static noise": nothing moved but the hiss,
+ * and it came round every 7.5 seconds.
+ *
+ * So it is built the way `menuBed()` is, because the player accepted that one:
+ *
+ *  - A minor pad in the case's own key, but it MOVES -- i, swelling across to
+ *    VI and back once per loop on a cosine, so the harmony is always on its way
+ *    somewhere. The lobby holds one chord; a case breathes between two.
+ *  - One soft pulse every two seconds. Slower than the lobby's 1.2s heartbeat
+ *    and single rather than double: a clock, not a pulse rate. The player is
+ *    reading here, so it keeps time without asking for attention.
+ *  - A three-note figure every eight seconds, rising over the first chord and
+ *    falling over the second, from one of three shapes picked by the case id.
+ *    The lobby's figure only falls.
+ *
+ * Sixteen seconds: 8 pulses, 2 figures, one chord cycle, all exact. Every
+ * oscillator completes a whole number of cycles, every swell is periodic in the
+ * loop, no note's tail reaches the seam, and nothing is trimmed -- only the air
+ * is crossfaded, inside its own buffer. `deviceReports.test.ts` checks the
+ * length and the seam of every file.
+ *
+ * Everything stays under 880Hz, where both message cues live -- see the note on
+ * the lobby below about a bed masking a cue.
  */
-function bed(seed) {
+const CASE_LOOP = 16;
+
+function caseBed(seed) {
   let h = 0;
   for (let i = 0; i < seed.length; i += 1) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
 
-  /*
-   * Roots from a minor scale — an octave and a half ABOVE where this started.
-   *
-   * The first version used 55–78Hz because that is where a room tone lives on
-   * studio monitors. On the device it was silence, and measurably so: a phone
-   * speaker is a few millimetres across and rolls off hard below roughly 300Hz,
-   * so every one of the seventeen beds was being asked to move air at a
-   * frequency the hardware cannot. Nobody heard any of it.
-   *
-   * These sit at 165–233Hz and carry an explicit octave partial on top, so the
-   * loudest energy in the file lands at 330–466Hz where a phone speaker actually
-   * works. The perceived pitch stays low enough to read as a room, not a tune.
-   */
-  const ROOTS = [164.81, 174.61, 185.0, 196.0, 220.0, 233.08];
-  const root = ROOTS[h % ROOTS.length];
-  const swell = 0.05 + ((h >> 3) % 7) * 0.011;
-
-  const buf = buffer(LOOP, MUSIC_RATE);
+  const rate = MUSIC_RATE;
+  const buf = buffer(CASE_LOOP, rate);
   const n = buf.length;
+  const whole = (f) => Math.round(f * CASE_LOOP) / CASE_LOOP;
 
-  /*
-   * ## Why this was rewritten: the first device report called it "static"
-   *
-   * Measured, the old version put **94% of its energy in one band, 300-600Hz**,
-   * and almost nothing anywhere else. That is the octave and the fifth sitting
-   * almost on top of each other with two detuned oscillators beating between
-   * them — which on a phone speaker is not a room, it is a narrow nasal buzz
-   * with a wobble on it. The fix for "inaudible" in the previous round had
-   * overshot into "audible and unpleasant": everything was pushed into the one
-   * band a handset reproduces best, and nothing was left anywhere else.
-   *
-   * A real room tone is broad and quiet. So the partials are spread across three
-   * octaves now and weighted DOWN as they rise, which is how an actual resonating
-   * space behaves, and the loudest single band carries about a third of the
-   * energy rather than all of it.
-   */
+  // The case's key. Same six roots the drones used, so each case keeps its room.
+  const ROOTS = [164.81, 174.61, 185.0, 196.0, 220.0, 233.08];
+  const r = ROOTS[h % ROOTS.length];
+
+  // Minor-key ratios: 1, flat third, fifth, flat sixth, flat seventh below.
+  const M3 = 1.1892;
+  const P5 = 1.4983;
+  const M6 = 1.5874;
+  const DOWN7 = 0.8909;
+
+  const voice = (f, g) => ({ f: whole(f), fd: whole(f * 1.003), g });
+  const I = [voice(r, 0.2), voice(r * M3, 0.14), voice(r * P5, 0.12), voice(r * 2, 0.06)];
+  const VI = [voice(r * 0.7937, 0.18), voice(r, 0.14), voice(r * M3, 0.12), voice(r * M6, 0.06)];
+
   for (let i = 0; i < n; i += 1) {
-    const t = i / MUSIC_RATE;
-    const breath = Math.sin(2 * Math.PI * swell * t) * 0.5 + 0.5;
-    // Two oscillators a few cents apart beat slowly against each other, which is
-    // what stops a sustained tone sounding like a dial tone.
-    const a = Math.sin(2 * Math.PI * root * t);
-    const b = Math.sin(2 * Math.PI * root * 1.004 * t);
-    const octave = Math.sin(2 * Math.PI * root * 2 * t);
-    const twelfth = Math.sin(2 * Math.PI * root * 3 * t);
-    const fifteenth = Math.sin(2 * Math.PI * root * 4 * t);
-    /*
-     * The top partial is what the old bed had none of, and its absence is most
-     * of why that one sounded synthetic. A little air up here costs almost no
-     * energy and is the difference between a tone and a space.
-     */
-    const shimmer = Math.sin(2 * Math.PI * root * 6 * t);
-    /*
-     * Weighted to keep the bed OUT of 600-1200Hz, and that constraint is not
-     * aesthetic.
-     *
-     * `message` puts 93% of its energy at 880 and 1175Hz, so a drone whose own
-     * peak band is 600-1200 masks the text tone continuously — which is exactly
-     * the second thing the first device report complained about. The first
-     * attempt at this rewrite landed 69% of the bed in that band and would have
-     * traded a buzz for a mask. The octave carries the weight instead, and
-     * everything above it falls away fast.
-     */
-    buf[i] =
-      (a + b) * 0.15 +
-      octave * 0.34 * (0.6 + 0.4 * breath) +
-      twelfth * 0.1 * (0.5 + 0.5 * breath) +
-      fifteenth * 0.045 * (0.4 + 0.6 * breath) +
-      shimmer * 0.022 * (0.3 + 0.7 * breath);
+    const t = i / rate;
+    // i at the top of the loop, VI at the middle, back to i -- once per loop.
+    const toVI = 0.5 - 0.5 * Math.cos((2 * Math.PI * t) / CASE_LOOP);
+    // Two breaths per loop, so it swells on each chord.
+    const breath = 0.5 - 0.5 * Math.cos((4 * Math.PI * t) / CASE_LOOP);
+    let v = 0;
+    for (const [chord, w] of [
+      [I, 1 - toVI],
+      [VI, toVI],
+    ]) {
+      for (const { f, fd, g } of chord) {
+        v += (Math.sin(2 * Math.PI * f * t) + Math.sin(2 * Math.PI * fd * t) * 0.6) * g * w;
+      }
+    }
+    buf[i] = v * (0.6 + 0.4 * breath) * 0.5;
+  }
+
+  // The clock: one soft pulse every two seconds, on the root. The last tail ends
+  // at 14.4s.
+  const PULSE = 2;
+  for (let k = 0; k < CASE_LOOP / PULSE; k += 1) {
+    addTone(buf, rate, {
+      freq: whole(r),
+      start: k * PULSE,
+      length: 0.4,
+      gain: 0.3,
+      curve: 9,
+      attack: 0.008,
+      harmonic: 0.5,
+    });
   }
 
   /*
-   * Air, and this layer used to be the other half of the problem.
-   *
-   * It was a one-pole at alpha 0.0016, which at 16kHz is a corner around **4Hz**
-   * — so it produced no audible hiss at all, only a slow random DC wander. It
-   * was then multiplied by NINE, which did nothing a listener could hear except
-   * push the peaks around, and everything the normaliser could see: the wander
-   * stole the headroom, so the tones it was supposed to sit behind got scaled
-   * down to make room for something inaudible. bed-menu measured a DC offset of
-   * 0.0156, which is that wander showing up as a number.
-   *
-   * alpha 0.22 puts the corner near 560Hz, which is hiss a person can actually
-   * hear, and the gain is low enough that it sits under the tone rather than on
-   * top of it.
+   * The figure, rising over i and falling over VI, an octave up. Three shapes,
+   * chosen by the case id so neighbouring cases do not share one. The highest
+   * note anywhere is 2 * 233 * 1.587 = 740Hz, under the cues.
    */
+  const SHAPES = [
+    [
+      [1, M3, P5],
+      [M6, P5, M3],
+    ],
+    [
+      [P5, M6, P5],
+      [M3, 1, DOWN7],
+    ],
+    [
+      [M3, 1, P5],
+      [M6, M3, 1],
+    ],
+  ];
+  const shape = SHAPES[(h >>> 4) % SHAPES.length];
+  shape.forEach((notes, phrase) => {
+    notes.forEach((ratio, k) => {
+      addTone(buf, rate, {
+        freq: r * 2 * ratio,
+        start: phrase * 8 + 1 + k * 0.6,
+        // Decays to about 1% before it is cut, so no note ends on a click.
+        length: 2.4,
+        gain: 0.14,
+        curve: 4.5,
+        attack: 0.03,
+        harmonic: 0.12,
+      });
+    });
+  });
+
+  // Air, quieter than the lobby's, crossfaded within its own buffer so the file
+  // stays exactly one loop long.
+  const fade = Math.floor(0.5 * rate);
+  const air = new Float32Array(n + fade);
   let last = 0;
-  for (let i = 0; i < n; i += 1) {
+  for (let i = 0; i < air.length; i += 1) {
     last += 0.22 * (Math.random() * 2 - 1 - last);
-    const breath = Math.sin((2 * Math.PI * swell * i) / MUSIC_RATE) * 0.5 + 0.5;
-    buf[i] += last * 0.06 * (0.4 + 0.6 * breath);
+    air[i] = last * 0.02;
   }
-
-  // Seamless: crossfade the tail over the head, then drop the tail.
-  const fade = Math.floor(0.5 * MUSIC_RATE);
   for (let i = 0; i < fade; i += 1) {
     const k = i / fade;
-    buf[i] = buf[i] * k + buf[n - fade + i] * (1 - k);
+    air[i] = air[i] * k + air[n + i] * (1 - k);
   }
-  /*
-   * 0.85, not 0.5. A bed is attenuated again at runtime by BED_GAIN in
-   * volume.ts, so half-scale here compounded into roughly -36dBFS on the
-   * device — under the noise floor of the room most people play in.
-   */
-  return normalise(buf.subarray(0, n - fade), 0.85);
+  for (let i = 0; i < n; i += 1) buf[i] += air[i];
+
+  return normalise(buf, 0.85);
 }
 
 /**
@@ -497,9 +516,9 @@ function bed(seed) {
  *
  * ## Why the menu gets its own generator
  *
- * `bed()` makes room tone: a drone whose job is to be forgotten while somebody
- * reads a murder out of a phone. That is right for sixteen case screens and
- * wrong for the one screen the player is NOT reading on. The home screen is
+ * The case screens once got a drone, whose job was to be forgotten while
+ * somebody reads a murder out of a phone -- see `caseBed()` for why that went.
+ * A drone was always wrong for the one screen the player is NOT reading on. The home screen is
  * where they choose, and a drone there is just a hum — the note back was that it
  * sounded bad, and that it should be ominous without being unpleasant, and
  * engaging.
@@ -517,7 +536,7 @@ function bed(seed) {
  * length both rhythms divide exactly: 20 heartbeats at 1.2s, 6 figures at 4s.
  * It was 16, which neither divides -- 16 / 1.2 is 13.33 beats -- so the loop
  * could never have been rhythmically seamless. Worse, it was then finished
- * with the same crossfade-and-trim bed() uses: blend the last 0.6s into the
+ * with the crossfade-and-trim the old drones used: blend the last 0.6s into the
  * first 0.6s and cut it off. Right for a drone, which has no rhythm to break.
  * Wrong here. It shortened the file to 15.4s, and the blend that joined the
  * ends FADED THE REAL DOWNBEAT OUT -- measured at half the strength of every
@@ -687,7 +706,7 @@ const TRACKS = [
 ];
 for (const name of TRACKS) {
   // The lobby is composed rather than seeded — see the note on menuBed().
-  const samples = name === 'menu' ? menuBed() : bed(name);
+  const samples = name === 'menu' ? menuBed() : caseBed(name);
   const bytes = writeWav(`bed-${name}.wav`, samples, MUSIC_RATE);
   total += bytes;
   console.log(`bed   ${name.padEnd(16)} ${(bytes / 1024).toFixed(0)}KB`);
